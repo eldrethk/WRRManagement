@@ -1,0 +1,12 @@
+# Visual Studio
+.vs/
+**/.vs/
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+
+# Local tool settings
+.claude/settings.local.json

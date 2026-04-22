@@ -1,0 +1,7 @@
+2026-02-11 16:33:56.586 -05:00 [INF] Initializing UI Database {"SourceContext":"HealthChecks.UI.Core.HostedService.UIInitializationHostedService","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:33:58.040 -05:00 [INF] Saving healthchecks configuration to database {"SourceContext":"HealthChecks.UI.Core.HostedService.UIInitializationHostedService","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:33:58.923 -05:00 [INF] Now listening on: https://localhost:7065 {"EventId":{"Id":14,"Name":"ListeningOnAddress"},"SourceContext":"Microsoft.Hosting.Lifetime","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:33:58.933 -05:00 [INF] Now listening on: http://localhost:5190 {"EventId":{"Id":14,"Name":"ListeningOnAddress"},"SourceContext":"Microsoft.Hosting.Lifetime","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:34:00.659 -05:00 [INF] Application started. Press Ctrl+C to shut down. {"SourceContext":"Microsoft.Hosting.Lifetime","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:34:00.661 -05:00 [INF] Hosting environment: Development {"SourceContext":"Microsoft.Hosting.Lifetime","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
+2026-02-11 16:34:00.665 -05:00 [INF] Content root path: C:\Users\karla\source\repos\WRRManagement\src\WRRManagement.Api {"SourceContext":"Microsoft.Hosting.Lifetime","MachineName":"KARLA-LAPTOP","EnvironmentName":"Development"}
