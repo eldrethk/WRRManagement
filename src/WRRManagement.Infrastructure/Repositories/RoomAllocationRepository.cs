@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Dapper;
+using System.Data;
 using WRRManagement.Core.Entities;
 using WRRManagement.Core.Interfaces;
 using WRRManagement.Infrastructure.Data;
@@ -59,6 +56,19 @@ namespace WRRManagement.Infrastructure.Repositories
         {
             var parameters =new {AllocationID = allocationId, Quantity = qty};
             await ExecuteAsync("dbo.genUpdAllocation", parameters);
+        }
+
+        public async Task<int> LowestAllocationAsync(int roomTypeId, DateTime start, DateTime end)
+        {
+            var parameters = new DynamicParameters();
+            parameters.Add("RoomID", roomTypeId);
+            parameters.Add("Start", start);
+            parameters.Add("End", end);
+            parameters.Add("Qty", dbType: System.Data.DbType.Int32, direction: System.Data.ParameterDirection.Output);
+
+            using var connection = _connectionFactory.CreateConnection();
+            await connection.ExecuteAsync("dbo.genSelLowQtyForAllocation", parameters, commandType: System.Data.CommandType.StoredProcedure);
+            return parameters.Get<int>("Qty");
         }
     }
 }

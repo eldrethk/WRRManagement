@@ -16,5 +16,6 @@ namespace WRRManagement.Core.Interfaces
         Task<RoomAllocation> GetByIdAsync(int allocationId);
         Task<int> GetQuantityForDayAsync(int roomId, DateTime date);
         Task UpdateQuantityAsync(int qty, int allocationId);
+        Task<int> LowestAllocationAsync(int roomTypeId, DateTime start, DateTime end);
     }
 }
