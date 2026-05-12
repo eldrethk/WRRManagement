@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using WRRManagement.Core.Entities;
+﻿using WRRManagement.Core.Entities;
+using WRRManagement.Core.Interfaces;
 using WRRManagement.Infrastructure.Data;
 
 namespace WRRManagement.Infrastructure.Repositories
 {
-    public class TierLevelRepository : DapperRepository
+    public class TierLevelRepository : DapperRepository, ITierLevelRepository
     {
         public TierLevelRepository(IDbConnectionFactory dbConnectionFactory): base(dbConnectionFactory) { }
 

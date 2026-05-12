@@ -39,6 +39,12 @@ namespace WRRManagement.Infrastructure.Repositories
             return await QueryFirstOrDefaultAsync<RackRate>("dbo.genSelRackRateByID", parameters);
         }
 
+        public async Task<RackRate?> GetRateForDateAsync(int roomTypeId, DateTime date)
+        {
+            var parameters = new { RoomID = roomTypeId, Temp = date };
+            return await QueryFirstOrDefaultAsync<RackRate?>("dbo.genSelRackRateByDate", parameters);
+        }
+
         public async Task InvisibleAsync(int rackRateId)
         {
             var parameters = new { RackRateID = rackRateId };

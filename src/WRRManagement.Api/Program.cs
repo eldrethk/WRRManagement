@@ -10,6 +10,7 @@ using Scalar.AspNetCore;
 using WRRManagement.Core.Interfaces;
 using WRRManagement.Infrastructure.Services;
 using WRRManagement.Application.Services;
+using WRRManagement.Application.Rooms;
 
 
 //Serilog Logger
@@ -33,14 +34,26 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddSingleton<IDbConnectionFactory>(new SqlConnectionFactory(connectionstring));
 
     // ** Register repositories**
-    //Auth Repository
+    //Auth
     builder.Services.AddScoped<IApiUserRepository, ApiUserRepository>();
     builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
-    //Infrastructure Services  
+    //Room query dependencies
+    builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
+    builder.Services.AddScoped<IRoomImageRepository, RoomImageRepository>();
+    builder.Services.AddScoped<IRoomFeaturesRepository, RoomFeaturesRepository>();
+    builder.Services.AddScoped<IAdultBaseRepository, AdultBaseRepository>();
+    builder.Services.AddScoped<IMaxBaseRepository, MaxBaseRepository>();
+    builder.Services.AddScoped<IRoomAllocation, RoomAllocationRepository>();
+    builder.Services.AddScoped<IRackRateRepository, RackRateRepository>();
+    builder.Services.AddScoped<ITierLevelRepository, TierLevelRepository>();
+    builder.Services.AddScoped<IMinStayRepository, MinStayRepository>();
+    builder.Services.AddScoped<IHotelSystemRepository, HotelSystemRepository>();
+    //Infrastructure Services
     builder.Services.AddSingleton<IPasswordService, PasswordService>(); //Stateless BCrypt hashing
     builder.Services.AddSingleton<ITokenService,  TokenService>(); //Reads Config + generates tokens
     //Application Services
-    builder.Services.AddScoped<IAuthService, AuthServices>();    
+    builder.Services.AddScoped<IAuthService, AuthServices>();
+    builder.Services.AddScoped<IRoomQueryService, RoomQueryService>();
 
     builder.AddDevAuthServices();
     builder.AddAuthorizatonServices();
