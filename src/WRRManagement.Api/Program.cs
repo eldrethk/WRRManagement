@@ -12,6 +12,7 @@ using WRRManagement.Infrastructure.Services;
 using WRRManagement.Application.Services;
 using WRRManagement.Application.Rooms;
 using WRRManagement.Application.Hotels;
+using WRRManagement.Application.Amenities;
 
 
 //Serilog Logger
@@ -52,6 +53,8 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddScoped<ITierLevelRepository, TierLevelRepository>();
     builder.Services.AddScoped<IMinStayRepository, MinStayRepository>();
     builder.Services.AddScoped<IHotelSystemRepository, HotelSystemRepository>();
+    //Amenity query dependencies
+    builder.Services.AddScoped<IExtraAmenityRepository, ExtraAmenityRepository>();
     //Infrastructure Services
     builder.Services.AddSingleton<IPasswordService, PasswordService>(); //Stateless BCrypt hashing
     builder.Services.AddSingleton<ITokenService,  TokenService>(); //Reads Config + generates tokens
@@ -59,6 +62,7 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddScoped<IAuthService, AuthServices>();
     builder.Services.AddScoped<IRoomQueryService, RoomQueryService>();
     builder.Services.AddScoped<IHotelQueryService, HotelQueryService>();
+    builder.Services.AddScoped<IAmenityQueryService, AmenityQueryService>();
 
     builder.AddDevAuthServices();
     builder.AddAuthorizatonServices();
