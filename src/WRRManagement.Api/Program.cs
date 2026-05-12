@@ -11,6 +11,7 @@ using WRRManagement.Core.Interfaces;
 using WRRManagement.Infrastructure.Services;
 using WRRManagement.Application.Services;
 using WRRManagement.Application.Rooms;
+using WRRManagement.Application.Hotels;
 
 
 //Serilog Logger
@@ -37,6 +38,9 @@ Log.Logger = new LoggerConfiguration()
     //Auth
     builder.Services.AddScoped<IApiUserRepository, ApiUserRepository>();
     builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+    //Hotel info
+    builder.Services.AddScoped<IHotelRepository, HotelRepository>();
+    builder.Services.AddScoped<IDisclaimerRepository, DisclaimerRepository>();
     //Room query dependencies
     builder.Services.AddScoped<IRoomTypeRepository, RoomTypeRepository>();
     builder.Services.AddScoped<IRoomImageRepository, RoomImageRepository>();
@@ -54,6 +58,7 @@ Log.Logger = new LoggerConfiguration()
     //Application Services
     builder.Services.AddScoped<IAuthService, AuthServices>();
     builder.Services.AddScoped<IRoomQueryService, RoomQueryService>();
+    builder.Services.AddScoped<IHotelQueryService, HotelQueryService>();
 
     builder.AddDevAuthServices();
     builder.AddAuthorizatonServices();
