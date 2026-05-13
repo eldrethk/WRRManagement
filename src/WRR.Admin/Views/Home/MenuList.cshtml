@@ -1,0 +1,28 @@
+﻿@model WRR.Admin.Models.UserViewModel
+@{
+    Layout = null;
+}
+
+<link href="~/css/sb-admin-2.css" rel="stylesheet" />
+
+<div class="form-horizonal container">
+    <div class="col-xl-5 col-lg-6 col-md-8 col-sm-10 mx-auto form p-4">
+        <section>
+            <form asp-action="SetHotel" method="post">
+                <p><img src="~/img/werentroomslogo.jpg" class="img-fluid" /></p>
+                <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
+                <div class="form-floating mb-3">
+                    <select asp-for="@Model.SelectedHotel" asp-items="@Model.UserHotels" class="custom-select"></select>        
+                </div>
+               
+
+                <div>
+                    <button type="submit" class="w-100 btn btn-lg btn-primary">Go</button>
+                </div>
+            
+            </form>
+        </section>
+    </div>
+
+</div>
+

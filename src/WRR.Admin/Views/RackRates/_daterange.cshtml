@@ -1,0 +1,39 @@
+﻿@model DateRangeViewModel
+
+<form asp-action="DateRange" asp-controller="RackRates" method="post">
+    <div class="modal-header">
+        <h2 class="modal-title text-primary form-padding-left">Add Date Range</h2>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="form-horizontal modal-body">
+        <span asp-validation-summary="ModelOnly" class="text-danger"></span>
+        <input type="hidden" asp-for="@Model.SelectedRoomTypeID" />
+        @if(Model.SelectedRoomTypeID > 0){
+            <h3>@Model.SelectRoomName</h3>
+        }
+        else{
+            <h3>All Room</h3>
+        }       
+        <div class="form-group">
+            <label asp-for=@Model.StartDate class="control-label col-md-4"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.StartDate" class="form-control" />
+                <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.EndDate" class="control-label col-md-4"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.EndDate" class="form-control" />
+                <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
+            </div>
+        </div>  
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</form>
+

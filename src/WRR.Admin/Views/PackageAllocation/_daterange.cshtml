@@ -1,0 +1,42 @@
+﻿@model WRR.Admin.Models.PackageEventViewModel
+
+<form asp-action="Create" asp-controller="PackageAllocation" method="post">
+    <div class="modal-header">
+        <h2 class="modal-title text-primary form-padding-left">Add Package Allocation</h2>
+        <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="form-horizontal modal-body">
+        <span asp-validation-summary="ModelOnly" class="text-danger"></span>
+        <input type="hidden" asp-for="@Model.SelectedRoomTypeID" />
+        <input type="hidden" asp-form="@Model.SelectedPackageID"/>
+        <h3>@Model.SelectRoomName</h3>
+        <div class="form-group">
+            <label asp-for=@Model.StartDate class="control-label col-md-4"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.StartDate" class="form-control" />
+                <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.EndDate" class="control-label col-md-4"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.EndDate" class="form-control" />
+                <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.Quantity" class="control-label col-md-4"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.Quantity" class="form-control" />
+                <span asp-validation-for="@Model.Quantity" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="submit" class="btn btn-success">Save</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+    </div>
+</form>
+

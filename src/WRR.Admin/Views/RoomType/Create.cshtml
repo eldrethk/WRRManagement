@@ -1,0 +1,128 @@
+﻿@model RoomTypeViewModel
+
+
+<h2>Create a Room Type</h2>
+<hr />
+<div class="form-horizontal">
+    <form asp-action="Create">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+        <div class="form-group">
+            <label asp-for="RoomType.Name" class="control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="RoomType.Name" class="form-control" />
+                <span asp-validation-for="RoomType.Name" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="RoomType.Description" class="control-label"></label>
+            <div class="col-md-10">
+                <textarea asp-for="RoomType.Description" class="form-control" rows="10"></textarea>
+                <span asp-validation-for="RoomType.Description" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="RoomType.BedType" class="control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="RoomType.BedType" class="form-control" />
+                <span asp-validation-for="RoomType.BedType" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <div class="col-md-4 control-label">Extra Person Fee Type:</div>
+        </div>
+    
+        <div class="form-group form-padding-left">
+            <div class="custom-control custom-switch">
+                <input type="radio" class="custom-control-input" asp-for="BaseFeeType" value="Adult" id="adult" onclick="showExtraPersonFeeContainer(this)" checked="checked" />
+                <label asp-for="RoomType.AdultBase" class="custom-control-label" for="adult"></label>
+            </div>
+
+            <div class="custom-control custom-switch">
+                <input type="radio" class="custom-control-input" asp-for="BaseFeeType" value="Max" onclick="showExtraPersonFeeContainer(this)" id="max" />
+                <label asp-for="RoomType.MaxBase" class="custom-control-label" for="max"></label>
+
+            </div>
+        </div>
+
+
+        <div id="AdultContainer" class='@(Model.BaseFeeType == "Adult" ? "show-display" : "no-display")'>
+            <div class="form-row p-2">
+                <div class="">
+                    <label asp-for="@Model.AdultBaseFee.AdultBaseCount" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.AdultBaseFee.AdultBaseCount" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value= i.ToString()})"></select>
+                </div>
+                <div class="">
+                    <label asp-for="@Model.AdultBaseFee.MaxAdult" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.AdultBaseFee.MaxAdult" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value= i.ToString()})"></select>
+                </div>
+                <div class="">
+                    <label asp-for="@Model.AdultBaseFee.ChildBaseCount" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.AdultBaseFee.ChildBaseCount" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value= i.ToString()})"></select>
+
+                </div>
+                <div class="">
+                    <label asp-for="@Model.AdultBaseFee.MaxChild" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.AdultBaseFee.MaxChild" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value= i.ToString()})"></select>
+
+                </div>
+                <div class="">
+                    <label asp-for="@Model.AdultBaseFee.MaxRoomTotal" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.AdultBaseFee.MaxRoomTotal" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value= i.ToString()})"></select>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="MaxContainer" class='@(Model.BaseFeeType == "Max" ? "show-display" : "no-display")'>
+            <div class="form-row p-2">
+                <div class="">
+                    <label asp-for="@Model.MaxBaseFee.BaseCount" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.MaxBaseFee.BaseCount" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{ Text= i.ToString(), Value = i.ToString()})"></select>
+                </div>
+                <div class="">
+                    <label asp-for="@Model.MaxBaseFee.MaxBaseCount" class="control-label pr-2"></label>
+                    <select class="number-select custom-select" asp-for="@Model.MaxBaseFee.MaxBaseCount" asp-items="Enumerable.Range(1, 15).Select(i => new SelectListItem{Text= i.ToString(), Value= i.ToString()})"></select>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row m-5 justify-content-center">
+            <div class="form-row">
+                <div class="col-6 text-right pr-2">
+                    <input type="submit" value="Create" class="btn btn-primary btn-lg" />
+                </div>
+                <div class="col-6 my-auto">
+                    <a asp-action="Index">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </form>
+
+</div>
+
+
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="text/javascript">
+
+        function showExtraPersonFeeContainer(PkType) {           
+            var selected = PkType.value;
+
+            if (selected == "Adult") {
+                $("#AdultContainer").removeClass("no-display").addClass("show-display");
+                $("#MaxContainer").removeClass("show-display").addClass("no-display");
+            }
+            else if (selected == "Max") {
+                $("#MaxContainer").removeClass("no-display").addClass("show-display");
+                $("#AdultContainer").removeClass("show-display").addClass("no-display");
+            }
+
+        };
+    </script>
+}

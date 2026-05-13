@@ -8,7 +8,7 @@ using WRRManagement.Core.Entities;
 
 namespace WRRManagement.Core.Interfaces
 {
-    public interface IRoomAllocation
+    public interface IRoomAllocationRepository
     {
         Task<int> AddAsync(RoomAllocation allocation);
         Task<bool> AllocationIsValidAsync(int roomId, DateTime start,  DateTime end);
@@ -17,5 +17,6 @@ namespace WRRManagement.Core.Interfaces
         Task<int> GetQuantityForDayAsync(int roomId, DateTime date);
         Task UpdateQuantityAsync(int qty, int allocationId);
         Task<int> LowestAllocationAsync(int roomTypeId, DateTime start, DateTime end);
+        Task AddDateRangeAsync(int RoomTypeId, DateTime start, DateTime end, int qty);
     }
 }

@@ -18,6 +18,8 @@ namespace WRRManagement.Core.Entities
         public decimal TierARate { get; internal set; }
         public decimal TierBRate { get; internal set; }
         public decimal TierCRate { get; internal set; }
+        public decimal TierDRate { get; internal set; }
+        public decimal Monthly { get; internal set; }
 
         public bool Visible { get; internal set; }
 
@@ -29,19 +31,24 @@ namespace WRRManagement.Core.Entities
             DateTime endDate,
             decimal tierARate,
             decimal tierBRate,
-            decimal tierCRate)
+            decimal tierCRate,
+            decimal tierDRate = 0,
+            decimal monthly = 0)
         {
-            if(roomTypeID <= 0) 
+            if (roomTypeID <= 0)
                 throw new ArgumentException("Room Type ID has to be a valid Room", nameof(roomTypeID));
 
-            if(tierARate < 0)
+            if (tierARate < 0)
                 throw new ArgumentException("Tier Rate can not be negative", nameof(tierARate));
 
-            if(tierBRate < 0) 
+            if (tierBRate < 0)
                 throw new ArgumentException("Tier Rate can not be negative", nameof(tierBRate));
 
-            if (tierCRate < 0) 
+            if (tierCRate < 0)
                 throw new ArgumentException("Tier Rate can not be negative", nameof(tierCRate));
+
+            if (tierDRate < 0)
+                throw new ArgumentException("Tier Rate can not be negative", nameof(tierDRate));
 
             if (startDate < DateTime.MinValue)
                 throw new ArgumentException("Start Date must be a valid date", nameof(startDate));
@@ -56,10 +63,11 @@ namespace WRRManagement.Core.Entities
                 TierARate = tierARate,
                 TierBRate = tierBRate,
                 TierCRate = tierCRate,
+                TierDRate = tierDRate,
+                Monthly = monthly,
                 RoomTypeID = roomTypeID,
                 StartDate = startDate,
                 EndDate = endDate
-
             };
         }
 
@@ -68,7 +76,9 @@ namespace WRRManagement.Core.Entities
             DateTime endDate,
             decimal tierARate,
             decimal tierBRate,
-            decimal tierCRate)
+            decimal tierCRate,
+            decimal tierDRate = 0,
+            decimal monthly = 0)
         {
             if (tierARate < 0)
                 throw new ArgumentException("Tier Rate can not be negative", nameof(tierARate));
@@ -78,6 +88,9 @@ namespace WRRManagement.Core.Entities
 
             if (tierCRate < 0)
                 throw new ArgumentException("Tier Rate can not be negative", nameof(tierCRate));
+
+            if (tierDRate < 0)
+                throw new ArgumentException("Tier Rate can not be negative", nameof(tierDRate));
 
             if (startDate < DateTime.MinValue)
                 throw new ArgumentException("Start Date must be a valid date", nameof(startDate));
@@ -92,7 +105,8 @@ namespace WRRManagement.Core.Entities
             TierARate = tierARate;
             TierBRate = tierBRate;
             TierCRate = tierCRate;
-
+            TierDRate = tierDRate;
+            Monthly = monthly;
         }
         
     }

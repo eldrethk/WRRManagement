@@ -50,7 +50,7 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddScoped<IRoomFeaturesRepository, RoomFeaturesRepository>();
     builder.Services.AddScoped<IAdultBaseRepository, AdultBaseRepository>();
     builder.Services.AddScoped<IMaxBaseRepository, MaxBaseRepository>();
-    builder.Services.AddScoped<IRoomAllocation, RoomAllocationRepository>();
+    builder.Services.AddScoped<IRoomAllocationRepository, RoomAllocationRepository>();
     builder.Services.AddScoped<IRackRateRepository, RackRateRepository>();
     builder.Services.AddScoped<ITierLevelRepository, TierLevelRepository>();
     builder.Services.AddScoped<IMinStayRepository, MinStayRepository>();

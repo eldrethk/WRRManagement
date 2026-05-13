@@ -1,0 +1,178 @@
+﻿body {
+
+}
+
+.control-label {
+    color: #000 !important;
+}
+
+.number-select{
+    max-width:80px;
+}
+
+.max-height-350{
+    max-height:350px !important;
+}
+
+.no-display{
+    display: none !important;
+}
+
+.show-display{
+    display:contents;
+}
+
+.table-striped > tbody > tr:nth-child(odd) > td,
+.table-striped > tbody > tr:nth-child(odd) > th {
+    background-color: red !important;
+    // Choose your own color here
+}
+
+.form-padding-left {
+    padding-left: 0.75rem;
+}
+
+.report tr{
+    line-height: 2.4rem;
+}
+
+.validation-summary-errors ul {
+    list-style: none;
+    padding-left: 0px;
+}
+
+.responive-textarea{
+    width: 100%;
+    height: 300px;
+}
+
+
+
+.viewmore-img-container {
+    position: relative;
+    display: inline-block; /* added */
+    overflow: hidden; /* added */
+}
+
+    .viewmore-img-container:hover img {
+        opacity: 0.5
+    }
+
+    .viewmore-img-container:hover a.zoom-icon {
+        opacity: 1; /* added */
+        top: 0; /* added */
+        z-index: 500;
+    }
+        /* added */
+        .viewmore-img-container:hover a.zoom-icon span {
+            top: 50%;
+            position: absolute;
+            left: 0;
+            right: 0;
+            transform: translateY(-50%);
+        }
+    /* added */
+    .viewmore-img-container a.zoom-icon {
+        display: block;
+        position: absolute;
+        top: -100%;
+        opacity: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
+        text-align: center;
+        color: #212529;
+    }
+
+
+select.ratingscale option[value="1"] {
+    color: #1cc88a;
+    font-weight: bold;
+}
+
+select.ratingscale option[value="2"] {
+    color: #858796;
+    font-weight: bold;
+}
+
+select.ratingscale option[value="3"] {
+    color: #f6c23e;
+    font-weight: bold;
+}
+select.ratingscale option[value="4"] {
+    color: #e74a3b;
+    font-weight: bold;
+}
+
+#overlay {
+    position: fixed;
+    top: 0;
+    z-index: 100;
+    width: 100%;
+    height: 100%;
+    display: none;
+    background: rgba(0,0,0,0.6);
+}
+
+.cv-spinner {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px #ddd solid;
+    border-top: 4px #2e93e6 solid;
+    border-radius: 50%;
+    animation: sp-anime 0.8s infinite linear;
+}
+
+@keyframes sp-anime {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.is-hide {
+    display: none;
+}
+
+
+
+@media print {
+    #accordionSidebar, #TopNav, #HotelListing, .alert, .noprint{
+        display: none;
+    }
+  
+    .shadow{
+        box-shadow:none !important;
+    }
+
+    .text-white{
+        color: #000 !important;
+    }
+
+    .card-body{
+        padding: 5px !important;
+    }
+
+    h3{
+        font-size: 1.1rem !important;
+    }
+
+    .report tr{
+        line-height:2rem !important;
+    }
+
+    .card-header{
+        padding: .60rem !important;
+    }
+
+    .card{
+        border:none !important;
+    }
+
+}

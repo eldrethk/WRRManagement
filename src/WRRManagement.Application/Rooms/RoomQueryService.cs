@@ -13,7 +13,7 @@ namespace WRRManagement.Application.Rooms
         private readonly IRoomFeaturesRepository _roomFeaturesRepo;
         private readonly IAdultBaseRepository _adultBaseRepo;
         private readonly IMaxBaseRepository _maxBaseRepo;
-        private readonly IRoomAllocation _roomAllocationRepo;
+        private readonly IRoomAllocationRepository _roomAllocationRepo;
         private readonly IRackRateRepository _rackRateRepo;
         private readonly ITierLevelRepository _tierLevelRepo;
         private readonly IMinStayRepository _minStayRepo;
@@ -26,7 +26,7 @@ namespace WRRManagement.Application.Rooms
             IRoomFeaturesRepository roomFeaturesRepo,
             IAdultBaseRepository adultBaseRepo,
             IMaxBaseRepository maxBaseRepo,
-            IRoomAllocation roomAllocationRepo,
+            IRoomAllocationRepository roomAllocationRepo,
             IRackRateRepository rackRateRepo,
             ITierLevelRepository tierLevelRepo,
             IMinStayRepository minStayRepo,
@@ -68,7 +68,7 @@ namespace WRRManagement.Application.Rooms
                     MainImageUrl = mainImage?.BlobUrl,
                     Images = images.Select(i => new RoomImageDto
                     {
-                        Id = i.ID,
+                        Id = i.ImageID,
                         BlobUrl = i.BlobUrl,
                         Description = i.Description,
                         SortOrder = i.SortOrder

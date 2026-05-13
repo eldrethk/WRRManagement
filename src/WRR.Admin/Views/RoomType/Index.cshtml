@@ -1,0 +1,62 @@
+﻿@model IEnumerable<WRRManagement.Core.Entities.RoomType>
+
+<h2>Room Type</h2>
+<p><a asp-controller="RoomType" asp-action="Create">Create New</a></p>
+
+@if (Enumerable.Count(Model) > 0)
+{
+    <table class="table table-responsive-sm">
+        <tr>
+
+            <th>
+                @Html.DisplayNameFor(m => m.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(m => m.Description)
+            </th>
+            <th>Extra Person Type</th>
+            <th>
+                Images
+            </th>
+            <th class="text-center">Room Features</th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.BedType</td>
+                <td class="pl-3">
+                    @if (item.AdultBase == true)
+                    {
+                        <span class="badge badge-pill badge-primary">Adult/Child Base</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-secondary">Max Number Base</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Index" asp-controller="RoomImages" asp-route-id="@item.RoomTypeID" class="far fa-images fa-3x text-info"></a>
+                </td>
+                <td class="text-center">
+                    <a asp-action="Roomfeatures" asp-controller="RoomType" asp-route-id="@item.RoomTypeID" class="fas fa-luggage-cart fa-3x text-dark"></a>
+                </td>
+                <td class="text-nowrap align-middle">
+                    <a asp-action="Edit" asp-controller="RoomType" asp-route-id="@item.RoomTypeID">Edit</a> |
+                    <a asp-action="Details" asp-controller="RoomType" asp-route-id="@item.RoomTypeID">Details</a> |
+                    <a asp-action="Delete" asp-controller="RoomType" asp-route-id="@item.RoomTypeID" , asp-route-name="@item.Name" asp-route-hotelid="@item.HotelID" onclick="return confirm('Are you sure you want to delete?');">Delete</a>
+                </td>
+            </tr>
+
+        }
+    </table>
+}
+
+else
+{
+    <div class="alert alert-warning">No Results</div>
+}
+
+
+

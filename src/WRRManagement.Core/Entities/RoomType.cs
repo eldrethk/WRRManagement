@@ -49,6 +49,12 @@ namespace WRRManagement.Core.Entities
             };
         }
 
+        
+        /// Creates a UI placeholder entry (e.g. an "All Rooms" option in a dropdown).
+        /// Bypasses hotel-ID and description validation — only use for view-layer display purposes.
+       public static RoomType CreatePlaceholder(int id, string name) =>
+            new RoomType { RoomTypeID = id, Name = name, Description = string.Empty };
+
         public void UpdateRoomType(
             string name,
             string description,

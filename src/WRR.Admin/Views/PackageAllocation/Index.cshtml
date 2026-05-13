@@ -1,0 +1,15 @@
+﻿@model HotelViewModel
+@section HeadScripts {
+    <link href="~/css/smart-scheduler.css" rel="stylesheet" />
+}
+
+<h2>Package Allocation</h2>
+<hr/>
+<component type="typeof(PackageAllocationComp)" param-HotelID="@Model.HotelId" render-mode="ServerPrerendered" />
+
+@section Scripts{
+    <script>
+      
+    </script>
+}
+

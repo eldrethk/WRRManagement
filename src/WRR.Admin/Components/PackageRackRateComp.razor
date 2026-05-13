@@ -1,0 +1,292 @@
+﻿@inject IPackageRepository packageService
+@inject IPackageRateRepository packageRateService
+
+
+<div class="form-row">
+    <div class="col-md-4">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label">Packages</label>
+                <div class="col-md-10">
+
+                    <InputSelect @bind-Value="viewModel.SelectedPackageID" class="custom-select" @bind-Value:after="() => SelectPackage()">
+                        <option value="0">Select Package</option>
+                        @foreach (var pk in viewModel.Packages)
+                        {
+                            <option value="@pk.PackageID">@pk.Name</option>
+                        }
+                    </InputSelect>
+
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Room Types</label>
+                <div class="col-md-10">
+                    <InputSelect @bind-Value="viewModel.SelectedRoomTypeID" class="custom-select">
+                        <option value="0">Select Room Type</option>
+                        @foreach (var rm in viewModel.Rooms)
+                        {
+                            <option value="@rm.RoomTypeID">@rm.Name</option>
+                        }
+                    </InputSelect>
+
+                </div>
+            </div>
+
+            <button class="btn btn-primary mt-4" @onclick="ViewRates">View Rates</button>
+            <button Class="btn btn-success mt-4" @onclick="OpenDateRange">Add New Rate</button>
+        </div>
+    </div>
+</div>
+<div class="form-row">
+    <div class="col-md-10">
+        <p class="text-danger text-center">@Message</p>
+        <p class="h2 text-primary text-center">@PackageName</p>
+        <p class="h4 text-info text-center">@RoomName</p>
+        <div class='container mt-3 align-content-center @(bothSelected == true ? "show-display" : "no-display")'>
+            <Smart.Blazor.Grid @ref="rateGrid" ColumnMenu="@columnMenu" DataSource="dataRecords" ConditionalFormatting="conditionalFormat" OnCommand="OnCommand" OnEndEdit="OnEndEdit" GroupHeader="@gridGroupHeader" Editing="@editing">
+                <Smart.Blazor.Columns>
+                    <Smart.Blazor.Column DataField="RateID" Label="ID"></Smart.Blazor.Column>
+                    <Smart.Blazor.Column DataField="RoomTypeID" Visible="false"></Smart.Blazor.Column>
+                    <Smart.Blazor.Column DataField="StartDate" Label="Start Date" DataType="date" CellsFormat="ddd, MMM dd, yyyy" ValidationRules="@dateValidationRules"></Smart.Blazor.Column>
+                    <Smart.Blazor.Column DataField="EndDate" Label="End Date" DataType="date" CellsFormat="ddd, MMM dd, yyyy" ValidationRules="@dateValidationRules"></Smart.Blazor.Column>
+                    <Smart.Blazor.Column DataField="Price" Label="Rate" DataType="number" CellsAlign="HorizontalAlignment.Center" CellsFormat="c2" ValidationRules="@currencyValidationRules"></Smart.Blazor.Column>
+                </Smart.Blazor.Columns>
+            </Smart.Blazor.Grid>
+        </div>
+    </div>
+</div>
+
+<Modal @ref="addModal">
+    <HeaderTemplate>
+        <h2 class="modal-title text-primary form-padding-left">@PackageName</h2>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">
+            <h3>@RoomName</h3>
+            <div class="form-group">
+                <label asp-for=@viewModel.StartDate class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                    <InputDate @bind-Value="viewModel.StartDate" class="form-control"></InputDate>
+                    <span asp-validation-for="@viewModel.StartDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="@viewModel.EndDate" class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                    <InputDate @bind-Value="viewModel.EndDate" class="form-control"></InputDate>
+                    <span asp-validation-for="@viewModel.EndDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="@viewModel.Price" class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                    <InputNumber @bind-Value="viewModel.Price" class="form-control"></InputNumber>
+                    <span asp-validation-for="@viewModel.Price" class="text-danger"></span>
+                </div>
+            </div>
+
+
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="AddRate">Save</button>
+        <button class="btn btn-secondary" @onclick="AddClose">Close</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter]
+    public int HotelID { get; set; }
+
+    public string? PackageName { get; set; }
+    public string? RoomName { get; set; }
+
+    public int SetRoomID { get; set; }
+    public int SetPackageID { get; set; }
+
+    public bool bothSelected = false;
+    public string Message { get; set; }
+
+    public PackageRateViewModel viewModel = new PackageRateViewModel();
+    public List<PackageRate> dataRecords = new List<PackageRate>();
+    public Grid rateGrid = default!;
+
+    private Modal addModal = default!;
+
+    GridEditing editing = new GridEditing()
+        {
+            Enabled = true,
+            Mode = GridEditingMode.Row,
+            Action = GridEditingAction.Click,
+            CommandColumn = new GridEditingCommandColumn(){Visible = true, Position = Smart.Blazor.Position.Near}
+
+        };
+
+    GridColumnMenu columnMenu = new GridColumnMenu()
+        {
+            Enabled = false
+        };
+
+    GridGroupHeader gridGroupHeader = new GridGroupHeader() { Visible = false };
+
+    IList<GridConditionalFormatting> conditionalFormat = new List<GridConditionalFormatting>()
+    {
+        new GridConditionalFormatting()
+        {
+            Column = "Price",
+            Condition = GridConditionalFormattingCondition.Equal,
+            FirstValue = 0,
+            Text = "#FFFFFF",
+            Highlight = "#FF0000"
+        }
+
+    };
+
+    IList<IDictionary<string, object>> dateValidationRules = new List<IDictionary<string, object>>()
+    {
+       new Dictionary<string, object>() { { "type", "required" } }
+    };
+
+    IList<IDictionary<string, object>> currencyValidationRules = new List<IDictionary<string, object>>()
+    {
+        new Dictionary<string, object>(){{"type", "required"}}
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewModel.Packages = (await packageService.GetWithRackRatesAsync(HotelID)).ToList();
+        viewModel.Rooms = new List<RoomType>();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task SelectPackage()
+    {
+        viewModel.Rooms = (await packageService.GetRoomTypesAsync(viewModel.SelectedPackageID)).ToList();
+        PackageName = viewModel.Packages?.FirstOrDefault(p => p.PackageID == viewModel.SelectedPackageID)?.Name ?? "Package is not set";
+    }
+
+    public async Task ViewRates()
+    {
+        RoomName = viewModel.Rooms?.FirstOrDefault(r => r.RoomTypeID == viewModel.SelectedRoomTypeID)?.Name ?? "Room is not set";
+
+        bothSelected = true;
+        SetPackageID = viewModel.SelectedPackageID;
+        SetRoomID = viewModel.SelectedRoomTypeID;
+
+        dataRecords = (await packageRateService.GetRatesAsync(SetRoomID, SetPackageID)).ToList();
+
+        StateHasChanged();
+    }
+
+    public async Task OpenDateRange()
+    {
+        await addModal.ShowAsync();
+    }
+
+    public async Task AddClose()
+    {
+        await addModal.HideAsync();
+    }
+
+    public async Task AddRate()
+    {
+        Message = string.Empty;
+
+        if (viewModel.StartDate > DateTime.MinValue && viewModel.EndDate > DateTime.MinValue)
+        {
+            if (SetRoomID > 0)
+            {
+                bool valid = await packageRateService.CheckDatesAsync(SetRoomID, viewModel.StartDate.Value, viewModel.EndDate.Value, SetPackageID);
+                if (!valid)
+                {
+                    await packageRateService.AddAsync(new PackageRate
+                        {
+                            PackageID = SetPackageID,
+                            RoomTypeID = SetRoomID,
+                            StartDate = viewModel.StartDate.Value,
+                            EndDate = viewModel.EndDate.Value,
+                            Price = viewModel.Price
+                        });
+                }
+                else
+                {
+                    Message = "Date range already exists";
+                }
+            }
+            await addModal.HideAsync();
+            await ViewRates();
+        }
+    }
+
+    public async void OnCommand(object obj)
+    {
+        Message = string.Empty;
+        if (obj is string jsonString)
+        {
+            var dictionary = JsonSerializer.Deserialize<Dictionary<string, object>>(jsonString);
+            if (dictionary != null && dictionary.ContainsKey("name"))
+            {
+                var name = dictionary["name"].ToString();
+                if (name == "commandColumnDeleteCommand")
+                {
+                    var index = Convert.ToInt32(dictionary["id"].ToString());
+                    PackageRate rate = dataRecords[index];
+                    await packageRateService.SetInvisibleAsync(rate.RateID);
+                }
+            }
+        }
+    }
+
+    private async Task OnEndEdit(Event ev)
+    {
+        Message = string.Empty;
+        GridEndEditEventDetail endEditEventDetail = new GridEndEditEventDetail();
+        if (ev.TryGetValue("detail", out var detailObj))
+        {
+            if (detailObj is JsonElement element)
+            {
+                var obj = element.GetProperty("data").ToString();
+                var dataObj = JsonSerializer.Deserialize<Dictionary<string, object>>(obj);
+                PackageRate updRackRate = ConvertOjbectToRate(dataObj);
+                if (updRackRate.RateID > 0)
+                {
+                    bool valid = await packageRateService.CheckDatesAsync(updRackRate.RoomTypeID, updRackRate.StartDate, updRackRate.EndDate, SetPackageID);
+                    if (!valid)
+                    {
+                        await packageRateService.UpdateAsync(updRackRate);
+                    }
+                    else
+                    {
+                        Message = "Date range already exists";
+                    }
+                }
+
+                rateGrid.Refresh();
+            }
+        }
+    }
+
+    public PackageRate ConvertOjbectToRate(Dictionary<string, object> dataObj)
+    {
+        var packageRate = new PackageRate();
+        try
+        {
+            packageRate.RateID = Convert.ToInt32(dataObj["RateID"].ToString());
+            packageRate.PackageID = SetPackageID;
+            packageRate.RoomTypeID = SetRoomID;
+            packageRate.StartDate = Convert.ToDateTime(dataObj["StartDate"].ToString());
+            packageRate.EndDate = Convert.ToDateTime(dataObj["EndDate"].ToString());
+            packageRate.Price = Convert.ToDecimal(dataObj["Price"].ToString());
+
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return packageRate;
+    }
+
+}
+

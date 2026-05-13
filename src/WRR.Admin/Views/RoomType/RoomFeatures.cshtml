@@ -1,0 +1,85 @@
+﻿@model IEnumerable<WRRManagement.Core.Entities.RoomFeatures>
+
+<h2>Room Features</h2>
+<hr />
+<div class="row">
+    <div class="col-md-5">
+        <p class="text-primary h2 m-3">
+            @ViewData["RoomName"]
+            <span><button type="button" id="btnAdd" class="anchorAdd btn btn-success" data-id='@ViewData["RoomTypeID"]'>Add Features</button></span>
+        </p>
+        <p><span asp-validation-summary="ModelOnly" class="text-danger"></span></p>
+  
+    <div id="addModal" class="modal" role="dialog" data-backdrop="static">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div id='addModalContent'></div>
+            </div>
+        </div>
+    </div>
+
+
+    @if (Enumerable.Count(Model) > 0)
+    {
+        <table class="table table-responsive-sm">
+            <tr>
+                <th>@Html.DisplayNameFor(model => model.Icon)</th>
+
+                <th>@Html.DisplayNameFor(model => model.Features)</th>
+                <th></th>
+            </tr>
+
+            @foreach (var item in Model)
+            {
+                var icon = "&#x" + item.Icon + ";";
+                <tr>
+                    <td><i class="fa fa-2x">@Html.Raw(icon)</i></td>
+                    <td class="py-3">@item.Features</td>
+                    <td><a asp-action="DeleteFeatures" asp-route-id="@item.ID" asp-route-roomid="@item.RoomTypeID" onclick="return confirm('Are you sure you want to delete');">Delete</a></td>
+                </tr>
+            }
+        </table>
+    }
+    else
+    {
+        <div class="alert alert-warning">No Results</div>
+    }
+    <p>
+        <a asp-action="Index">Back to Room List</a>
+    </p>
+    
+    </div>
+    <div class="col-md-7">
+        <div class="alert-secondary p-5">
+            <h2>How to add Icons for Room Features</h2>
+            <p>Step 1: Click on this link <a href="https://fontawesome.com/search?m=free&o=r" target="_blank">Awesome Icon</a></p>
+            <p>Step 2: Enter type of icon in the search box</p>
+            <p><img src="~/awesome-steps/awesome-step1.png" class="img-fluid" /></p>
+            <p>Step 3: Click on Icon you want to use</p>
+            <p><img src="~/awesome-steps/awesome-step2.png" class="img-fluid" /></p>
+            <p>Step 4: Click on the unicode for the icon to copy</p>
+            <p><img src="~/awesome-steps/awesome-step3.png" class="img-fluid" /></p>
+            <p>Step 5: Paste (Ctrl + V) in the icon textbox and enter the label for the features</p>
+            <p><img src="~/awesome-steps/awesome-step4.png" class="img-fluid" /></p>
+            <p>Step 6: Click Add</p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script>
+        $(document).ready(function () {
+            $('#btnAdd').click(function () {
+                var url = '/RoomType/OpenModal';
+                var id = $(this).data('id');             
+                $.get(url, { id: id }, function (data) {
+                    $('#addModalContent').html(data);
+                    $('#addModal').modal('show');
+                });             
+               
+            });
+        });
+    </script>
+}
+
+

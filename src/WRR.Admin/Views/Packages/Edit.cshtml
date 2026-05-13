@@ -1,0 +1,296 @@
+﻿@model PackageViewModel
+
+@section HeadScripts {
+    <link href="~/css/summernote.min.css" rel="stylesheet" />
+    <script src="~/js/summernote.min.js"></script>
+}
+
+<h2>Edit A Package</h2>
+<hr />
+
+<div class="form-horizontal">
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        <div asp-validation-summary="All" class="text-danger"></div>     
+        <input type="hidden" asp-for="Package.HotelID" />
+        <input type="hidden" asp-for="Package.PackageID" />
+        <div class="form-group">
+            <label asp-for="Package.Name" class="control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Package.Name" class="form-control" />
+                <span asp-validation-for="Package.Name" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Package.Description" class="control-label"></label>
+            <div class="col-md-10">
+                <textarea asp-for="Package.Description" id="summernote"></textarea>
+                <span asp-validation-for="Package.Description" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="Package.ShortDescription" class="control-label"></label>
+            <div class="col-md-10">
+                <input asp-for="Package.ShortDescription" class="form-control" />
+                <span asp-validation-for="Package.ShortDescription" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4 control-label">Package's Image:</div>
+            <div class="col-md-10 pb-2">
+                @if (Model.Package.SmImage != null)
+                {
+                    <img src="@Url.Content($"~/img/package-images/{Model.Package.SmImage}")" id="PackageImage" width="200" height="200" />
+                }
+                else{<p>No Image</p>}
+                <input type="hidden" asp-for="@Model.Package.SmImage" />
+                <button class="btn btn-danger btn-sm anchorImgChange">Change Image</button>
+            </div>
+            <div class="input-group mb-3 col-md-6">
+                <div class="custom-file no-display">
+                    <input asp-for="UploadImage.Image" class="custom-file-input" id="file" />
+                    <label asp-for="UploadImage.Image" class="custom-file-label"></label>
+                    <span asp-validation-for="UploadImage.Image" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4 control-label">Package needs to include:</div>
+        </div>
+        <div class="form-row">
+            <div class="col">
+                <div class="form-group form-padding-left">
+                    <div class="custom-control custom-checkbox form-check-inline">
+                        <input type="checkbox" class="custom-control-input" asp-for="Package.WeekendSurcharge" id="weekendsurcharge" />
+                        <label asp-for="Package.WeekendSurcharge" class="custom-control-label" for="weekendsurcharge"></label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox form-check-inline">
+                        <input type="checkbox" class="custom-control-input" asp-for="Package.ResortFees" id="resortfees" />
+                        <label asp-for="Package.ResortFees" class="custom-control-label" for="resortfees"></label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox form-check-inline">
+                        <input type="checkbox" class="custom-control-input" asp-for="Package.ExtraPersonFee" id="extrapersonfee" />
+                        <label asp-for="Package.ExtraPersonFee" class="custom-control-label" for="extrapersonfee"></label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox form-check-inline">
+                        <input type="checkbox" class="custom-control-input" asp-for="Package.SpecialPage" id="special" />
+                        <label asp-for="Package.SpecialPage" class="custom-control-label" for="special"></label>
+                    </div>
+
+                    <div class="custom-control custom-checkbox form-check-inline">
+                        <input type="checkbox" class="custom-control-input" asp-for="Package.Visible" id="visible" />
+                        <label asp-for="Package.Visible" class="custom-control-label" for="visible"></label>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label class="control-label">Include Room Types</label>
+                    <div class="col-md-10">
+                        <select multiple asp-for="@Model.SelectedRoomTypeIds" asp-items="Model.PackageRoom" class="custom-select"></select>
+                        <span asp-validation-for="@Model.SelectedRoomTypeIds" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-xl-4">
+                <label asp-for="Package.MinDays" class="control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Package.MinDays" class="form-control" />
+                    <span asp-validation-for="Package.MinDays" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group col-xl-4">
+                <label asp-for="Package.MaxDays" class="control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Package.MaxDays" class="form-control" />
+                    <span asp-validation-for="Package.MaxDays" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-xl-4">
+                <label asp-for="Package.ValidFrom" class="control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Package.ValidFrom" class="form-control" value="@Model.Package.ValidFrom.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Package.ValidFrom" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group col-xl-4">
+                <label asp-for="Package.ValidTo" class="control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Package.ValidTo" class="form-control" value="@Model.Package.ValidTo.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Package.ValidTo" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group col-xl-4">
+                <label asp-for="Package.EndDisplayDate" class="control-label"></label>
+                <div class="col-md-10">
+                    <input asp-for="Package.EndDisplayDate" class="form-control" value="@Model.Package.EndDisplayDate.ToString("yyyy-MM-dd")" />
+                    <span asp-validation-for="Package.EndDisplayDate" class="text-danger"></span>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4 control-label">Arrival Days</div>
+        </div>
+
+        <div class="form-group form-inline form-padding-left">
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrMon" id="monday" />
+                <label asp-for="Package.ArrMon" class="custom-control-label" for="monday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrTues" id="tuesday" />
+                <label asp-for="Package.ArrTues" class="custom-control-label" for="tuesday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrWed" id="wednesday" />
+                <label asp-for="Package.ArrWed" class="custom-control-label" for="wednesday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrThurs" id="thursday" />
+                <label asp-for="Package.ArrThurs" class="custom-control-label" for="thursday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrFri" id="friday" />
+                <label asp-for="Package.ArrFri" class="custom-control-label" for="friday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrSat" id="saturday" />
+                <label asp-for="Package.ArrSat" class="custom-control-label" for="saturday"></label>
+            </div>
+
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrSun" id="sunday" />
+                <label asp-for="Package.ArrSun" class="custom-control-label" for="sunday"></label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-4 control-label">Package Type:</div>
+        </div>
+
+        <div class="form-row">
+            <div class="col-md-2">
+                <div class="form-group form-padding-left">
+                    <div class="custom-control custom-switch">
+                        <input type="radio" class="custom-control-input" asp-for="@Model.PackageType" value="Nights" id="night" onclick="showPackageType(this)" />
+                        <label class="custom-control-label" for="night">Nights Free</label>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="radio" class="custom-control-input" asp-for="@Model.PackageType" value="Percentage" id="percentage" onclick="showPackageType(this)" />
+                        <label class="custom-control-label" for="percentage">Percentage Off</label>
+                    </div>
+                    <div class="custom-control custom-switch">
+                        <input type="radio" class="custom-control-input" asp-for="@Model.PackageType" value="Rate" id="rate" onclick="showPackageType(this)" />
+                        <label class="custom-control-label" for="rate">Price Point</label>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div id="NightsContainer" class='form-group @(Model.PackageType == "Nights" ? "show-display" : "no-display")'>
+                    <label asp-for="Package.NumberOfNights" class="control-label"></label>
+                    <div class="col-md-4">
+                        <input asp-for="Package.NumberOfNights" class="form-control" />
+                        <span asp-validation-for="Package.NumberOfNights" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div id="PercentContainer" class='form-group @(Model.PackageType == "Percentage" ? "show-display" : "no-display")'>
+                    <label asp-for="Package.PercentageOff" class="control-label"></label>
+                    <div class="col-md-4">
+                        <input asp-for="Package.PercentageOff" class="form-control" />
+                        <span asp-validation-for="Package.PercentageOff" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div class="form-group">
+            <label asp-for="Package.PackageAllocation" class="control-label"></label>
+            <div class="col-md-10">
+                <div class="custom-control custom-switch">
+                    <input asp-for="Package.PackageAllocation" value="True" class="custom-control-input" id="yes"  checked='@(Model.Package.PackageAllocation == true ? true : false)' />
+                    <label class="custom-control-label" for="yes">Yes</label>
+                </div>
+                <div class="custom-control custom-switch">
+                    <input asp-for="Package.PackageAllocation" value="False" class="custom-control-input" id="no" checked='@(Model.Package.PackageAllocation == false ? true : false)' />
+                    <label class="custom-control-label" for="no">No</label>
+                </div>
+            </div>
+
+        </div>
+        <div class="row m-5 justify-content-center">
+            <div class="form-row">
+                <div class="col-6 text-right pr-2">
+                    <input type="submit" value="Update" class="btn btn-primary btn-lg" />
+                </div>
+                <div class="col-6 my-auto">
+                    <a asp-action="Index">Back to List</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+@section Scripts {
+    <script src="~/js/filesizevalidate.js"></script>
+
+    <script type="text/javascript">
+
+
+        $(function () {
+
+            $('#summernote').summernote({
+                height: 300
+            });
+        });
+
+        $('.anchorImgChange').click(function (e) {
+            e.preventDefault();
+            $(".custom-file").removeClass("no-display").addClass("show-display");
+        });
+
+        function showPackageType(PkType) {
+            var selected = PkType.value;
+            if (selected == "Nights") {
+                $("#NightsContainer").removeClass("no-display").addClass("show-display");
+                $("#PercentContainer").removeClass("show-display").addClass("no-display");
+            }
+            else if (selected == "Percentage") {
+                $("#PercentContainer").removeClass("no-display").addClass("show-display");
+                $("#NightsContainer").removeClass("show-display").addClass("no-display");
+            }
+            else if (selected == "Rate") {
+                $("#NightsContainer").removeClass("show-display").addClass("no-display");
+                $("#PercentContainer").removeClass("show-display").addClass("no-display");
+            }
+        };
+
+        $('#file').on('change',
+            function () {
+                //get the file name
+                var fileName = $(this).val();
+                //replace the "Choose a file" label
+                $(this).next('.custom-file-label').html(fileName);
+            })
+    </script>
+
+
+}

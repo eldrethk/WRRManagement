@@ -1,0 +1,169 @@
+﻿@model PackageViewModel
+
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h2>Package Details</h2>
+
+<div class="form-horizontal">
+    
+    <hr />
+    <dl class="dl-horizontal">
+        <dt>
+            <label asp-for="Package.Name"></label>            
+        </dt>
+
+        <dd>
+            @Model.Package.Name
+        </dd>
+
+        <dt>
+            <label asp-for="Package.Description"></label>           
+        </dt>
+
+        <dd>
+            @Html.Raw(Model.Package.Description)
+        </dd>
+        <dt>
+            <label asp-for="Package.ShortDescription"></label>         
+        </dt>
+        <dd>
+            @Model.Package.ShortDescription
+        </dd>
+
+        <dt><label>Package Image</label></dt>
+        <dd>
+            @if (Model.Package.SmImage != null)
+            {
+                <img src="@Url.Content($"~/img/package-images/{Model.Package.SmImage}")" id="PackageImage" width="200" height="200" />
+            }
+            else
+            {
+                <span class="badge badge-pill badge-secondary">No Image</span>
+            }
+        <dt>Package Includes:</dt>
+        <dd>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.WeekendSurcharge" disabled>
+                <label class="custom-control-label" asp-for="Package.WeekendSurcharge"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ResortFees" disabled>
+                <label class="custom-control-label" asp-for="Package.ResortFees"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ExtraPersonFee" disabled>
+                <label class="custom-control-label" asp-for="Package.ExtraPersonFee"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.Visible" disabled>
+                <label class="custom-control-label" asp-for="Package.Visible"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.Amenity" disabled>
+                <label class="custom-control-label" asp-for="Package.Amenity"></label>
+            </div>
+        </dd>
+        <dt>Room Types Included:</dt>
+
+        <dd>
+            <ul class="list-group col-md-5 mb-4">
+                    @foreach(var room in Model.RoomTypes)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                                        @room.Name  
+                        </li>
+                    }
+                </ul>
+        </dd>
+        <dt><label asp-for="Package.MinDays"></label></dt>
+        <dd>@Model.Package.MinDays</dd>
+        <dt><label asp-for="Package.MaxDays"></label></dt>
+        <dd>@Model.Package.MaxDays</dd>
+        <dt><label asp-for="Package.ValidFrom"></label></dt>
+        <dd>@Model.Package.ValidFrom</dd>
+        <dt><label asp-for="Package.ValidTo"></label></dt>
+        <dd>@Model.Package.ValidTo</dd>
+        <dt><label asp-for="Package.EndDisplayDate"></label></dt>
+        <dd>@Model.Package.EndDisplayDate</dd>
+
+        <dt>Arrival Days:</dt>
+        <dd>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrMon" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrMon"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrTues" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrTues"></label>
+            </div>
+                        <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrWed" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrWed"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrThurs" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrThurs"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrFri" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrFri"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrSat" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrSat"></label>
+            </div>
+            <div class="custom-control custom-checkbox form-check-inline">
+                <input type="checkbox" class="custom-control-input" asp-for="Package.ArrSun" disabled>
+                <label class="custom-control-label" asp-for="Package.ArrSun"></label>
+            </div>
+        </dd>
+            @if(Model.Package.NightsFree == true)
+            {
+                <dt><label asp-for="Package.NumberOfNights"></label></dt>
+                <dd>@Model.Package.NumberOfNights</dd>
+            }
+            else if(Model.Package.PercentOff == true)
+            {
+                <dt><label asp-for="Package.PercentageOff"></label></dt>
+                <dd>@Model.Package.PercentageOff</dd>
+            }
+            else
+            {
+                <dt>Packge Type</dt>
+                <dd>Price Point</dd>
+            }
+
+            <dt><label asp-for="Package.PackageAllocation"></label></dt>
+            <dd>@Model.Package.PackageAllocation</dd>
+    </dl>
+</div>
+
+<div class="w-50 mb-5">
+    <ul class="list-group">
+        <li class="list-group-item bg-secondary text-white">Amenities Included:</li>
+        @if (Model.Amenities != null && Model.Amenities.Count > 0)
+        {
+            foreach(var amenity in Model.Amenities)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <a asp-action="Details" asp-controller="ExtraAmenity" asp-route-id="@amenity.AmenityID">@amenity.Name</a>
+                </li>
+            }
+        }
+        else
+        {
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                None
+            </li>
+        
+        }
+
+    </ul>
+
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model.Package.PackageID">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</div>

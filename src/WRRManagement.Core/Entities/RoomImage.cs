@@ -8,15 +8,16 @@ namespace WRRManagement.Core.Entities
 {
     public class RoomImage
     {
-        public int ID { get; internal set; }
+        public int ImageID { get; internal set; }
         public int RoomTypeID { get; internal set; }
-        public string BlobUrl { get; internal set; }
+        public string BlobUrl { get; internal set; } = string.Empty;
         public string? Description { get; internal set; }
-        public string FileName { get; internal set; }
-        public string ContentType { get; internal set; }
+        public string FileName { get; internal set; } = string.Empty;
+        public string ContentType { get; internal set; } = string.Empty;
         public long ContentLength { get; internal set; }
         public int SortOrder { get; internal set; }
         public bool IsVisible { get; internal set; }
+        public bool MainImage { get; internal set; }
 
         public RoomImage() { }
         public static RoomImage Create(

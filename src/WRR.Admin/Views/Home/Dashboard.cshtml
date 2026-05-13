@@ -1,0 +1,234 @@
+@model WRR.Admin.Models.DashboardViewModel
+@using X.PagedList
+@using X.PagedList.Mvc.Core
+
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section HeadScripts {
+    <meta http-equiv="refresh" content="60" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/x-pagedlist/10.5.3/X.PagedList.css" />
+}
+
+<h2>Dashboard</h2>
+
+<!-- Reservation Queue -->
+<div class="card shadow mb-4">
+    <div class="card-header py-3">
+        <h6 class="m-0 font-weight-bold text-primary">Reservation Queue</h6>
+    </div>
+    <div class="card-body">
+        @if (Model.ReservationQue.Count > 0)
+        {
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-responsive-sm" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Reservation ID</th>
+                            <th>Customer Name</th>
+                            <th>Booked Date</th>
+                            <th>Type</th>
+                            <th>Viewed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.ReservationQue)
+                        {
+                            <tr>
+                                <td>
+                                    @if (item.ReservationType == 1)
+                                    {
+                                        @Html.ActionLink(item.ReservationID.ToString(), "ReservationDetails", "Report", new { id = item.ReservationID }, null)
+                                    }
+                                    else if (item.ReservationType == 2)
+                                    {
+                                        @Html.ActionLink(item.ReservationID.ToString(), "PackageReservationDetails", "Report", new { id = item.ReservationID }, null)
+                                    }
+                                    else
+                                    {
+                                        @item.ReservationID
+                                    }
+                                </td>
+                                <td>@item.CustomerName</td>
+                                <td>@item.BookedDate.ToString("ddd, MMM dd yyyy hh:mm tt")</td>
+                                <td>
+                                    @if (item.ReservationType == 1)
+                                    {
+                                        <span class="badge badge-primary">Rack Rate</span>
+                                    }
+                                    else if (item.ReservationType == 2)
+                                    {
+                                        <span class="badge badge-success">Special</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">Other</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @if (item.Viewed)
+                                    {
+                                        <span class="badge badge-pill badge-primary">Yes</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-pill badge-secondary">No</span>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+                <div class="mt-2">
+                    @Html.PagedListPager(Model.ReservationQue, page => Url.Action("Dashboard", new { page }))
+                </div>
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-warning">No reservations in queue</div>
+        }
+    </div>
+</div>
+
+<!-- Past 30 Days -->
+<h2>The Past 30 Days</h2>
+<div class="row">
+    <!-- Rack Rate Reservations -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="font-weight-bold text-primary text-uppercase mb-1">Reservations Booked</div>
+                        @if (Model.Reservation_Booked.TotalCount > 0)
+                        {
+                            <div class="h6 text-gray-700">@Model.Reservation_Booked.TotalCount Reservations</div>
+                            <div class="h6 text-gray-700">@Model.Reservation_Booked.TotalNight <i class="fas fa-moon"></i> Nights</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.Reservation_Booked.TotalRate.ToString("C")</div>
+                        }
+                        else
+                        {
+                            <div class="h6 text-gray-700">None</div>
+                        }
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Package / Specials -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="font-weight-bold text-success text-uppercase mb-1">Specials Booked</div>
+                        @if (Model.Specials_Booked.TotalCount > 0)
+                        {
+                            <div class="h6 text-gray-700">@Model.Specials_Booked.TotalCount Reservations</div>
+                            <div class="h6 text-gray-700">@Model.Specials_Booked.TotalNight <i class="fas fa-moon"></i> Nights</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.Specials_Booked.TotalRate.ToString("C")</div>
+                        }
+                        else
+                        {
+                            <div class="h6 text-gray-700">None</div>
+                        }
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-star fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Amenities -->
+    <div class="col-xl-4 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="font-weight-bold text-warning text-uppercase mb-1">Amenities Booked</div>
+                        @if (Model.Amenitity_Booked.TotalCount > 0)
+                        {
+                            <div class="h6 text-gray-700">@Model.Amenitity_Booked.TotalCount Bookings</div>
+                            <div class="h4 mb-0 font-weight-bold text-gray-800">@Model.Amenitity_Booked.TotalRate.ToString("C")</div>
+                        }
+                        else
+                        {
+                            <div class="h6 text-gray-700">None</div>
+                        }
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-concierge-bell fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Today's Events -->
+<h2>Today's Events</h2>
+<div class="row justify-content-center">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <label class="text-secondary display-4 mb-3">@Model.TodaysArrival</label>
+                        <h3 class="text-primary">Arrivals</h3>
+                    </div>
+                    <div class="col-4 text-right pr-3">
+                        <i class="fas fa-bell text-secondary fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <label class="text-secondary display-4 mb-3">@Model.TodaysDeparture</label>
+                        <h3 class="text-primary">Departures</h3>
+                    </div>
+                    <div class="col-4 text-right pr-3">
+                        <i class="fas fa-sign-out-alt text-secondary fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-8">
+                        <label class="text-secondary display-4 mb-3">@Model.RoomOccuied</label>
+                        <h3 class="text-primary">Rooms Occupied</h3>
+                    </div>
+                    <div class="col-4 text-right pr-3">
+                        <i class="fas fa-door-closed text-secondary fa-3x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(function () {
+            $('ul.pagination li').addClass("page-item");
+            $('ul.pagination li a').addClass("page-link");
+        });
+    </script>
+}

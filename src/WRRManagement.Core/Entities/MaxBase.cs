@@ -8,10 +8,10 @@ namespace WRRManagement.Core.Entities
 {
     public class MaxBase
     {
-        public int ID { get; private set; }
-        public int RoomTypeID { get; private set; }
-        public int MaxBaseCount { get; private set; }
-        public int BaseCount { get; private set; }
+        public int ID { get; internal set; }
+        public int RoomTypeID { get; internal set; }
+        public int MaxBaseCount { get; internal set; }
+        public int BaseCount { get; internal set; }
 
         public MaxBase() { }
 

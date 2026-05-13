@@ -1,0 +1,301 @@
+﻿@rendermode RenderMode.InteractiveServer
+
+@inject NavigationManager NavManager
+@inject IPackageRepository packageService
+@inject IPackageAllocationRepository packageAllocationService
+
+
+
+<div class="form-row">
+    <div class="col-md-3">
+        <div class="form-horizontal">
+            <div class="form-group">
+                <label class="control-label">Packages</label>
+                <div class="col-md-10">
+                  
+                    <InputSelect @bind-Value="viewModel.SelectedPackageID" class="custom-select" @bind-Value:after="() => SelectPackage()">
+                        <option value="0">Select Package</option>
+                        @foreach(var pk in viewModel.Packages)
+                        {
+                            <option value="@pk.PackageID">@pk.Name</option>
+                        }
+                    </InputSelect>
+                   
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label">Room Types</label>
+                <div class="col-md-10">
+                    <InputSelect @bind-Value="viewModel.SelectedRoomTypeID" class="custom-select">
+                        <option value="0">Select Room Type</option>
+                        @foreach (var rm in viewModel.Rooms)
+                        {
+                            <option value="@rm.RoomTypeID">@rm.Name</option>
+                        }
+                    </InputSelect>
+
+                </div>
+            </div>
+           
+            <button class="btn btn-primary mt-4" @onclick="ViewAllocation">View Calendar</button>
+            <button Class="btn btn-success mt-4" @onclick="OpenDateRange">Add Date Range</button>
+        </div>
+    </div>
+    <div class="col-md-9">
+        <p class="h2 text-primary text-center">@PackageName</p>
+        <p class="h4 text-info text-center">@RoomName</p>
+        <div class='container mt-3 @(bothSelected == true ? "show-display" : "no-display")'>
+            <Scheduler @ref="scheduler" DataSource="dataRecords" View="SchedulerViewType.Month" OnItemClick="OnItemClick" OnChange="OnChange" ShadeUntilCurrentTime="true" DisableWindowEditor="true" DisableDateMenu="true" DisableEventMenu="true" DisableContextMenu="true" DisableAutoScroll="true" DisableDrag="true" DisableResize="true">
+            </Scheduler>
+        </div>
+    </div>
+</div>
+
+
+<Modal @ref="scheModal">
+    <HeaderTemplate>
+        <h2 class="modal-title text-primary form-padding-left">@PackageName</h2>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">
+            <h3>@RoomName</h3>
+            <div class="form-group">
+                <label class="control-label col-md-4">Date:</label>
+                <div class="col-md-10">
+                    @currentEvent.AllocateDate.ToShortDateString()
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Quantity:</label>
+                <div class="col-md-10">
+                    <InputNumber @bind-Value="Qty" class="form-control" />
+                    <span class="text-danger">@validationMsg</span>
+                </div>
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="Save">Save</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </FooterTemplate>
+</Modal>
+
+
+<Modal @ref="addModal">
+    <HeaderTemplate>
+        <h2 class="modal-title text-primary form-padding-left">@PackageName</h2>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">
+            <h3>@RoomName</h3>
+            <div class="form-group">
+                <label asp-for=@viewModel.StartDate class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                    <InputDate @bind-Value="viewModel.StartDate" class="form-control"></InputDate>                 
+                    <span asp-validation-for="@viewModel.StartDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="@viewModel.EndDate" class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                    <InputDate @bind-Value="viewModel.EndDate" class="form-control"></InputDate>                  
+                    <span asp-validation-for="@viewModel.EndDate" class="text-danger"></span>
+                </div>
+            </div>
+            <div class="form-group">
+                <label asp-for="@viewModel.Quantity" class="control-label col-md-4"></label>
+                <div class="col-md-10">
+                   <InputNumber @bind-Value="viewModel.Quantity" class="form-control"></InputNumber>
+                    <span asp-validation-for="@viewModel.Quantity" class="text-danger"></span>
+                </div>
+            </div>
+
+           
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="AddDateRange">Save</button>
+        <button class="btn btn-secondary" @onclick="AddClose">Close</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter]
+    public int HotelID { get; set; }
+
+    public string? RoomName { get; set; }
+    public string? PackageName { get; set; }
+
+    public int SetRoomID { get; set; }
+    public int SetPackageID { get; set; }
+
+    public bool bothSelected = false;
+    public int? Qty { get; set; }
+
+    public PackageEventViewModel viewModel = new PackageEventViewModel();
+    private Scheduler scheduler = null!; // Add null! to indicate non-nullability
+    private PackageAllocation currentEvent = new PackageAllocation();
+    private List<SchedulerDataSource> dataRecords = new();
+    private List<PackageAllocation> allocList = new();
+
+    private Modal scheModal = default!;
+    private Modal addModal = default!;
+    private string? validationMsg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        viewModel.Packages = (await packageAllocationService.GetPackagesWithAllocationsAsync(HotelID)).ToList();
+        viewModel.Rooms = new List<RoomType>();
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task SelectPackage()
+    {
+        viewModel.Rooms = (await packageService.GetRoomTypesAsync(viewModel.SelectedPackageID)).ToList();
+    }
+
+    public async Task AddDateRange()
+    {
+        if (viewModel.StartDate > DateTime.MinValue && viewModel.EndDate > DateTime.MinValue)
+        {
+            await packageAllocationService.AddDateRangeAsync(SetRoomID, SetPackageID, viewModel.StartDate.Value, viewModel.EndDate.Value, viewModel.Quantity.Value);
+            await addModal.HideAsync();
+            await ViewAllocation();
+        }
+    }
+
+    public async Task ViewAllocation()
+    {
+        PackageName = viewModel.Packages?.FirstOrDefault(x => x.PackageID == viewModel.SelectedPackageID)?.Name ?? "Package is not set";
+        RoomName = viewModel.Rooms?.FirstOrDefault(x => x.RoomTypeID == viewModel.SelectedRoomTypeID)?.Name ?? "Room Type is not set";
+
+        allocList = (await packageAllocationService.GetForPackageRoomAsync(viewModel.SelectedPackageID, viewModel.SelectedRoomTypeID)).ToList();
+        dataRecords = allocList.Select(ConvertAllocationToSchedulerDataSource).ToList();
+
+        bothSelected = true;
+        SetPackageID = viewModel.SelectedPackageID;
+        SetRoomID = viewModel.SelectedRoomTypeID;
+
+        StateHasChanged();
+    }
+
+
+    private string ValidateQty()
+    {
+
+        if (Qty == null)
+        {
+            return "Quantity is required";
+        }
+        else if (Qty < 0)
+        {
+            return "Quantity must be a positive number";
+        }
+        return string.Empty;
+
+    }
+
+    public async Task Save()
+    {
+        validationMsg = ValidateQty();
+        if (string.IsNullOrEmpty(validationMsg))
+        {
+            currentEvent.Quantity = Qty ?? 0;
+            if (currentEvent.AllocationID > 0)
+            {
+                await packageAllocationService.UpdateAsync(currentEvent.Quantity, currentEvent.AllocationID);
+                dataRecords.Remove(dataRecords.Find(x => x.Id == currentEvent.AllocationID.ToString()));
+            }
+            else if (currentEvent.AllocateDate > DateTime.MinValue)
+            {
+                currentEvent.AllocationID = await packageAllocationService.AddAsync(SetRoomID, SetPackageID, currentEvent.AllocateDate, currentEvent.Quantity);
+            }
+
+            var updateEvent = ConvertAllocationToSchedulerDataSource(currentEvent);
+            dataRecords.Add(updateEvent);
+            dataRecords = new List<SchedulerDataSource>(dataRecords);
+
+            await scheModal.HideAsync();
+            currentEvent = new PackageAllocation();
+            scheduler.Refresh();
+        }
+        else
+        {
+            StateHasChanged();
+        }
+    }
+
+    public async Task Close()
+    {
+        await scheModal.HideAsync();
+    }
+
+    public async Task AddClose()
+    {
+        await addModal.HideAsync();
+    }
+
+    public async Task OpenDateRange()
+    {
+        await addModal.ShowAsync();
+    }
+
+    private async Task OnChange(Event ev)
+    {
+        if (ev.TryGetValue("detail", out var detailObj))
+        {
+            if (detailObj is JsonElement jsonElement)
+            {
+                if (jsonElement.TryGetProperty("dateStart", out var dateStartProp))
+                {
+                    currentEvent.AllocateDate = dateStartProp.GetDateTime();
+                    Qty = null;
+                }
+            }
+        }
+        if (currentEvent.AllocateDate >= DateTime.Today)
+            await scheModal.ShowAsync();
+    }
+
+    private async Task OnItemClick(Event ev)
+    {
+        SchedulerItemClickEventDetail itemClickEventDetail = ev["Detail"];
+        var obj = itemClickEventDetail.ItemObj;
+        SchedulerEvent schedulerEvent = obj.ToObject<SchedulerEvent>() ?? new SchedulerEvent();
+
+        currentEvent = new PackageAllocation
+            {
+                AllocateDate = Convert.ToDateTime(schedulerEvent.DateStart),
+                Quantity = Convert.ToInt32(schedulerEvent.Label),
+                AllocationID = Convert.ToInt32(schedulerEvent.Id)
+            };
+
+        Qty = currentEvent.Quantity;
+        await scheModal.ShowAsync();
+    }
+
+    public SchedulerDataSource ConvertAllocationToSchedulerDataSource(PackageAllocation model)
+    {
+        if (model == null)
+            throw new ArgumentNullException(nameof(model));
+
+        string color = "#000";
+        if (model.Quantity >= 20)
+            color = "#43AC6A";
+        else if (model.Quantity <= 19 && model.Quantity >= 10)
+            color = "#E99002";
+        else
+            color = "#F04124";
+
+        return new SchedulerDataSource()
+            {
+                Id = model.AllocationID.ToString(),
+                Label = model.Quantity.ToString(),
+                DateStart = model.AllocateDate,
+                DateEnd = model.AllocateDate,
+                AllDay = true,
+                Color = color
+            };
+    }
+}

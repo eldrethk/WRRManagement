@@ -36,14 +36,18 @@ namespace WRRManagement.Infrastructure.Repositories
                 hotel.HotelID,
                 hotel.Name,
                 hotel.Email,
-                hotel.Address,
+                hotel.AdminEmail,
+                hotel.Address1,
+                hotel.Address2,
                 hotel.City,
                 hotel.State,
                 hotel.ZipCode,
                 hotel.LocalPhone,
                 hotel.TollFreePhone,
-                hotel.CheckInTime,
-                hotel.CheckOutTime
+                hotel.Website,
+                hotel.Description,
+                hotel.CheckIn,
+                hotel.CheckOut
             };
 
             await ExecuteAsync("dbo.genUpdHotel", parameters);

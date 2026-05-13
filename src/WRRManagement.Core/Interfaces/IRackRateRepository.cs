@@ -11,6 +11,7 @@ namespace WRRManagement.Core.Interfaces
     {
         Task<int> AddAsync(RackRate rackRate);
         Task<RackRate> GetByIdAsync(int rackRateId);
+        Task<bool> CheckDatesAysnc(int roomId, DateTime startDate, DateTime endDate);
         Task<IEnumerable<RackRate>> GetAllByRoomIdAsync(int roomId);
         Task<RackRate?> GetRateForDateAsync(int roomTypeId, DateTime date);
         Task InvisibleAsync(int rackRateId);

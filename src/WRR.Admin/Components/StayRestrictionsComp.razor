@@ -1,0 +1,177 @@
+﻿@rendermode RenderMode.InteractiveServer
+
+@inject IMinStayRepository minStayService
+@inject IRoomTypeRepository roomTypeService
+
+<div>
+    <p class="h2 text-info text-center">@RoomName</p>
+    <div id='calendar'>
+        <Scheduler @ref="scheduler" DataSource="dataRecords" View="SchedulerViewType.Month" OnItemClick="OnItemClick" OnChange="OnChange" ShadeUntilCurrentTime="true" DisableWindowEditor="true" DisableDateMenu="true" DisableEventMenu="true" DisableContextMenu="true" DisableAutoScroll="true" DisableDrag="true" DisableResize="true">
+        </Scheduler>
+    </div>
+</div>
+
+
+<Modal @ref="modal">
+    <HeaderTemplate>
+        <h2 class="modal-title text-primary form-padding-left">Min Night Stay</h2>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">
+            <h3>@RoomName</h3>
+            <div class="form-group">
+                <label class="control-label col-md-4">Date:</label>
+                <div class="col-md-10">
+                    @currentEvent.StayDate.ToShortDateString()
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Quantity:</label>
+                <div class="col-md-10">
+                    <InputNumber @bind-Value="Qty" class="form-control" />
+                    <span class="text-danger">@validationMsg</span>
+                </div>
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="Save">Save</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </FooterTemplate>
+</Modal>
+
+
+@code {
+
+    [Parameter]
+    public int RoomID { get; set; }
+
+    [Parameter]
+    public string? RoomName { get; set; }
+
+    public int? Qty { get; set; }
+
+    private Scheduler scheduler = null!; // Add null! to indicate non-nullability
+    private MinStay currentEvent = new MinStay();
+    private List<SchedulerDataSource> dataRecords = new();
+    private List<MinStay> minStayList = new();
+
+    private Modal modal = default!;
+    private string? validationMsg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(RoomID > 0)
+        {
+            RoomName = (await roomTypeService.GetByIdAsync(RoomID)).Name;
+            minStayList = (await minStayService.GetAllForRoomAsync(RoomID)).ToList();
+            dataRecords = minStayList.Select(ConvertMinStaytoSchedulerDataSource).ToList();
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private string ValidateQty()
+    {
+        if (Qty == null)
+            return "Quantity is required";
+        else if (Qty < 0)
+            return "Quantity must be greater than 0";
+
+        return string.Empty;
+    }
+
+    public async Task Save()
+    {
+        validationMsg = ValidateQty();
+        if (string.IsNullOrEmpty(validationMsg))
+        {
+            currentEvent.Quantity = Qty ?? 0;
+            if(currentEvent.MinStayID > 0)
+            {
+                await minStayService.UpdateAsync(currentEvent.Quantity, currentEvent.MinStayID);
+                dataRecords.Remove(dataRecords.Find(x => x.Id == currentEvent.MinStayID.ToString()));
+            }
+            else if(currentEvent.StayDate > DateTime.MinValue)
+            {
+                var newMinStay = new MinStay { RoomTypeID = RoomID, StayDate = currentEvent.StayDate, Quantity = currentEvent.Quantity };
+                currentEvent.MinStayID = await minStayService.AddAsync(newMinStay);
+            }
+
+            var updateEvent = ConvertMinStaytoSchedulerDataSource(currentEvent);
+            dataRecords.Add(updateEvent);
+            dataRecords = new List<SchedulerDataSource>(dataRecords);
+
+            await modal.HideAsync();
+            currentEvent = new MinStay();
+            scheduler.Refresh();
+        }
+        else
+        {
+            StateHasChanged();
+        }
+    }
+
+    public void Close()
+    {
+        modal.HideAsync();
+    }
+
+
+    private async Task OnChange(Event ev)
+    {
+        if(ev.TryGetValue("detail", out var detailObj))
+        {
+            if(detailObj is JsonElement jsonElement)
+            {
+                if(jsonElement.TryGetProperty("dateStart", out var dateStartProp))
+                {
+                    currentEvent.StayDate = dateStartProp.GetDateTime();
+                    Qty = null;
+                }
+            }
+        }
+        if (currentEvent.StayDate >= DateTime.Today)
+            await modal.ShowAsync();
+    }
+
+    private async Task OnItemClick(Event ev)
+    {
+        SchedulerItemClickEventDetail itemClickEventDetail = ev["Detail"];
+        var obj = itemClickEventDetail.ItemObj;
+        SchedulerEvent schedulerEvent = obj.ToObject<SchedulerEvent>() ?? new SchedulerEvent();
+
+        currentEvent = new MinStay
+        {
+                StayDate = Convert.ToDateTime(schedulerEvent.DateStart),
+                Quantity = Convert.ToInt32(schedulerEvent.Label),
+                MinStayID = Convert.ToInt32(schedulerEvent.Id)
+        };
+
+        Qty = currentEvent.Quantity;
+        await modal.ShowAsync();
+    }
+    public SchedulerDataSource ConvertMinStaytoSchedulerDataSource(MinStay model)
+    {
+        if (model == null)
+            throw new ArgumentNullException(nameof(model));
+
+        string color = "#000";
+
+        if (model.Quantity >= 10)
+            color = "#F04123";
+        else if (model.Quantity <= 9 && model.Quantity > 3)
+            color = "#E99002";
+        else
+            color = "#43ac6a"; 
+
+        return new SchedulerDataSource()
+            {
+                Id = model.MinStayID.ToString(),
+                Label = model.Quantity.ToString(),
+                DateStart = model.StayDate,
+                DateEnd = model.StayDate,
+                AllDay = true,
+                Color = color
+            };
+    }
+}

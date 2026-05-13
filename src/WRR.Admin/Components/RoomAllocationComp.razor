@@ -1,0 +1,187 @@
+﻿@rendermode RenderMode.InteractiveServer
+
+@inject IRoomAllocationRepository roomAllocationService
+@inject IRoomTypeRepository roomTypeService
+
+
+<div>   
+    <p class="h2 text-info text-center">@RoomName</p>
+    <div id='calendar'>
+        <Scheduler @ref="scheduler" DataSource="dataRecords"  View="SchedulerViewType.Month" OnItemClick="OnItemClick" OnChange="OnChange" ShadeUntilCurrentTime="true" DisableWindowEditor="true" DisableDateMenu="true" DisableEventMenu="true" DisableContextMenu="true" DisableAutoScroll="true" DisableDrag="true" DisableResize="true">
+    </Scheduler>  
+    </div>
+</div>
+
+
+<Modal @ref="modal">
+    <HeaderTemplate>      
+        <h2 class="modal-title text-primary form-padding-left">Room Allocation</h2>       
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">
+            <h3>@RoomName</h3>
+            <div class="form-group">
+                <label class="control-label col-md-4">Date:</label>
+                <div class="col-md-10">
+                    @currentEvent.AllocateDate.ToShortDateString()
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Quantity:</label>
+                <div class="col-md-10">
+                    <InputNumber @bind-Value="Qty" class="form-control" /> 
+                    <span class="text-danger">@validationMsg</span>
+                </div>
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="Save">Save</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </FooterTemplate>
+</Modal>
+
+
+@code {
+    [Parameter]
+    public int RoomID { get; set; }   
+
+    [Parameter]
+    public string? RoomName { get; set; }
+
+    public int? Qty { get; set; }
+
+    private Scheduler scheduler = null!; // Add null! to indicate non-nullability
+    private RoomAllocation currentEvent = new RoomAllocation(); // Initialize currentEvent
+    private List<SchedulerDataSource> dataRecords = new();
+    private List<RoomAllocation> roomAllocationList = new();
+
+    private Modal modal = default!;
+    private string? validationMsg;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (RoomID > 0)
+        {
+            RoomName = (await roomTypeService.GetByIdAsync(RoomID)).Name;
+            roomAllocationList = (await roomAllocationService.GetAllForRoomAsync(RoomID)).ToList();
+            dataRecords = roomAllocationList.Select(ConvertAllocationtoSchedulerDataSource).ToList();
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private string ValidateQty()
+    {
+
+        if (Qty == null)
+        {
+            return "Quantity is required";
+        }
+        else if(Qty <0)
+        {
+            return "Quantity must be a positive number";
+        }
+        return string.Empty;
+
+    }
+
+    public async Task Save()
+    {
+        validationMsg = ValidateQty();
+        if (string.IsNullOrEmpty(validationMsg))
+        {
+            currentEvent.Quantity = Qty ?? 0;
+            if (currentEvent.AllocationID > 0)
+            {
+                await roomAllocationService.UpdateQuantityAsync(currentEvent.Quantity, currentEvent.AllocationID);
+                dataRecords.Remove(dataRecords.Find(x => x.Id == currentEvent.AllocationID.ToString()));
+            }
+            else if (currentEvent.AllocateDate > DateTime.MinValue)
+            {
+                var newAlloc = new RoomAllocation { RoomTypeID = RoomID, AllocateDate = currentEvent.AllocateDate, Quantity = currentEvent.Quantity };
+                currentEvent.AllocationID = await roomAllocationService.AddAsync(newAlloc);
+            }
+
+            var updateEvent = ConvertAllocationtoSchedulerDataSource(currentEvent);
+
+            dataRecords.Add(updateEvent);
+            dataRecords = new List<SchedulerDataSource>(dataRecords);
+
+            await modal.HideAsync();
+            currentEvent = new RoomAllocation();
+            scheduler.Refresh();
+        }
+        else
+        {
+            StateHasChanged();
+        }
+
+    }
+
+    public void Close()
+    {
+        // Close the modal
+        modal.HideAsync();
+    }    
+
+    private async Task OnChange(Event ev)
+    {
+        if(ev.TryGetValue("detail", out var detailObj))
+        {
+            if(detailObj is JsonElement jsonElement)
+            {
+                if(jsonElement.TryGetProperty("dateStart", out var dateStartProp))
+                {
+                    currentEvent.AllocateDate = dateStartProp.GetDateTime();
+                    Qty = null;
+                }
+            }
+        }   
+        if(currentEvent.AllocateDate >= DateTime.Today)
+            await modal.ShowAsync();
+    }
+
+    private async Task OnItemClick(Event ev)
+    {        
+        SchedulerItemClickEventDetail itemEventDetail = ev["Detail"];
+        var obj = itemEventDetail.ItemObj;
+        SchedulerEvent scheEvent = obj.ToObject<SchedulerEvent>() ?? new SchedulerEvent(); // Deserialize obj to SchedulerEvent
+
+        currentEvent = new RoomAllocation
+        {
+            AllocateDate = Convert.ToDateTime(scheEvent.DateStart),
+            Quantity = Convert.ToInt32(scheEvent.Label),
+            AllocationID = Convert.ToInt32(scheEvent.Id)      
+        };
+
+        //set the Qty property to bind the value
+        Qty = currentEvent.Quantity;
+        await modal.ShowAsync();      
+    }   
+
+
+    public SchedulerDataSource ConvertAllocationtoSchedulerDataSource(RoomAllocation allocationModel)
+    {
+        if (allocationModel == null)
+            throw new ArgumentNullException(nameof(allocationModel));
+
+        string color = "#000";
+        if (allocationModel.Quantity >= 20)
+            color = "#43AC6A";
+        else if (allocationModel.Quantity <= 19 && allocationModel.Quantity >= 10)
+            color = "#E99002";
+        else
+            color = "#F04124";
+
+        return new SchedulerDataSource()
+        {
+            Id = allocationModel.AllocationID.ToString(),
+            Label = allocationModel.Quantity.ToString(),
+            DateStart = allocationModel.AllocateDate,
+            DateEnd = allocationModel.AllocateDate,
+            AllDay = true,
+            Color = color
+           
+        };
+    }
+}

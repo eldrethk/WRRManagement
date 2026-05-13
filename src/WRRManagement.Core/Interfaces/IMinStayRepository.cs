@@ -14,5 +14,6 @@ namespace WRRManagement.Core.Interfaces
         Task<IEnumerable<MinStay>> GetAllForRoomAsync(int roomId);
         Task<int> GetQuantityForDateAsync(int roomId, DateTime date);
         Task UpdateAsync(int Quantity, int minStayId);
+        Task AddDateRangeAsync(int RoomTypeId, DateTime startDate, DateTime endDate, int qty);
     }
 }

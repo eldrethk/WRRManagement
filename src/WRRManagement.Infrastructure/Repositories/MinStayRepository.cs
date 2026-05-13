@@ -22,6 +22,16 @@ namespace WRRManagement.Infrastructure.Repositories
             };
             return await ExecuteScalarIntAsync("dbo.genInsMinStay", parameters);
         }
+        public async Task<int> AddAsync(int RoomTypeID, DateTime StayDate, int Qty)
+        {
+            var parameters = new
+            {
+                RoomID = RoomTypeID,
+                Date = StayDate,
+                Quantity = Qty
+            };
+            return await ExecuteScalarIntAsync("dbo.genInsMinStay", parameters);
+        }
 
         public async Task<IEnumerable<MinStay>> GetAllForRoomAsync(int roomId)
         {
@@ -53,6 +63,19 @@ namespace WRRManagement.Infrastructure.Repositories
                 MinStayID = minStayId
             };
             await ExecuteAsync("dbo.genUpdMinStay", parameters);
+        }
+
+        public async Task AddDateRangeAsync(int RoomTypeId, DateTime startDate,  DateTime endDate, int qty)
+        {
+            if(startDate > DateTime.MinValue && endDate > DateTime.MinValue)
+            {
+                DateTime temp = startDate;
+                while(temp <= endDate)
+                {
+                    await AddAsync(RoomTypeId, temp, qty);
+                    temp = temp.AddDays(1);
+                }
+            }
         }
     }
 }

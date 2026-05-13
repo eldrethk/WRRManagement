@@ -7,6 +7,6 @@ namespace WRRManagement.Core.Interfaces
         Task<char> GetTierForDateAsync(int hotelId, DateTime date);
         Task<IEnumerable<TierLevel>> GetAllForHotelAsync(int hotelId);
         Task<int> AddAsync(TierLevel tierLevel);
-        Task UpdateAsync(char tier, int tierLevelId);
+        Task UpdateAsync(char tier, int tierLevelId); Task AddDateRangeAsync(int hotelID, DateTime start, DateTime end, char tier);
     }
 }

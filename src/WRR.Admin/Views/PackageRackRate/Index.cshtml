@@ -1,0 +1,8 @@
+﻿@model HotelViewModel
+@section HeadScripts {
+    <link href="~/css/smart-scheduler.css" rel="stylesheet" />
+}
+
+<h2>Package Rack Rates</h2>
+<hr />
+<component type="typeof(PackageRackRateComp)" param-HotelID="@Model.HotelId" render-mode="ServerPrerendered" />

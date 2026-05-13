@@ -30,14 +30,18 @@ namespace WRRManagement.Application.Hotels
                 HotelId = hotel.HotelID,
                 Name = hotel.Name,
                 Email = hotel.Email,
-                Address = hotel.Address,
+                AdminEmail = hotel.AdminEmail,
+                Address1 = hotel.Address1,
+                Address2 = hotel.Address2,
                 City = hotel.City,
                 State = hotel.State,
                 ZipCode = hotel.ZipCode,
                 LocalPhone = hotel.LocalPhone,
                 TollFreePhone = hotel.TollFreePhone,
-                CheckInTime = hotel.CheckInTime,
-                CheckOutTime = hotel.CheckOutTime
+                Website = hotel.Website,
+                Description = hotel.Description,
+                CheckIn = hotel.CheckIn,
+                CheckOut = hotel.CheckOut
             };
         }
 

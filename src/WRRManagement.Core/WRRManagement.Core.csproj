@@ -6,4 +6,9 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- Allow the back-office admin app to access internal setters on entities -->
+    <InternalsVisibleTo Include="WRR.Admin" />
+  </ItemGroup>
+
 </Project>

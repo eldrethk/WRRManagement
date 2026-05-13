@@ -1,0 +1,29 @@
+﻿@model WRRManagement.Core.Entities.RoomType
+
+
+<h2>Room Type Details</h2>
+<div>
+
+    <hr />
+    <dl class="dl-horizontal">
+        <dt><label asp-for="@Model.Name"></label></dt>
+        <dd>@Model.Name</dd>
+
+        <dt><label asp-for="@Model.Description"></label></dt>
+        <dd>@Model.Description</dd>
+
+        <dt><label asp-for="@Model.BedType"></label></dt>
+        <dd>@Model.BedType</dd>
+
+        <dt><label asp-for="@Model.AdultBase"></label></dt>
+        <dd>@Model.AdultBase</dd>
+
+        <dt><label asp-for="@Model.MaxBase"></label></dt>
+        <dd>@Model.MaxBase</dd>
+    </dl>
+
+</div>
+<p>
+    <a asp-action="Edit" asp-controller="RoomType" asp-route-id="@Model.RoomTypeID">Edit</a> |
+    <a asp-action="Index" asp-controller="RoomType">Back to List</a>
+</p>

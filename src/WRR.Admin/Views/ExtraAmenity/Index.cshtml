@@ -1,0 +1,94 @@
+﻿@model IEnumerable<WRRManagement.Core.Entities.ExtraAmenity>
+
+<h2>Extra Amenities</h2>
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+@if (Enumerable.Count(Model) > 0)
+{
+    <table class="table">
+        <tr>
+
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.Label("Amenity Type")
+            </th>
+            <th class="text-center">               
+                @Html.DisplayNameFor(model => model.ShortDescription)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.AmenityRate)              
+            </th>
+            <th class="text-center">
+                @Html.DisplayNameFor(model => model.ViewOnRackRate)
+            </th>
+            <th></th>
+        </tr>
+        @foreach (var item in Model)
+        {
+            <tr>
+
+                <td>
+                    @item.Name
+                </td>
+                <td>
+                    @if (item.Discount == true)
+                    {
+                        <span class="text-secondary font-weight-bold">@Html.DisplayNameFor(model => model.Discount)</span>
+                    }
+                    else if (item.OneTimeFee == true)
+                    {
+                        <span class="text-danger font-weight-bold">@Html.DisplayNameFor(model => model.OneTimeFee)</span>
+                    }
+                    else if (item.OneTimeFeePerson == true)
+                    {
+                        <span class="text-warning font-weight-bold">@Html.DisplayNameFor(model => model.OneTimeFeePerson)</span>
+                    }
+                    else if (item.PerDay == true)
+                    {
+                        <span class="text-info font-weight-bold">@Html.DisplayNameFor(model => model.PerDay)</span>
+                    }
+                    else if (item.PerDayPerPerson == true)
+                    {
+                        <span class="text-primary font-weight-bold">@Html.DisplayNameFor(model => model.PerDayPerPerson)</span>
+                    }
+                    else if (item.PerNightStay == true)
+                    {
+                        <span class="text-success font-weight-bold">@Html.DisplayNameFor(model => model.PerNightStay)</span>
+                    }
+
+                </td>
+                <td style="max-width:250px;">
+                    @item.ShortDescription
+                </td>
+                <td class="text-center">
+                    @item.AmenityRate.ToString("C")
+                </td>
+
+                <td class="text-center">
+                    @if (item.ViewOnRackRate == true)
+                    {
+                        <span class="badge badge-pill badge-success">On</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-danger">Off</span>
+                    }
+                </td>
+                <td>
+                    <a asp-action="Edit" asp-route-id="@item.AmenityID">Edit</a> |
+                    <a asp-action="Details" asp-route-id="@item.AmenityID">Details</a> |
+                    <a asp-action="Delete" asp-route-id="@item.AmenityID" asp-route-name="@item.Name" asp-route-hotelid="@item.HotelID" onclick="return confirm('Are you sure you want to delete?');">Delete</a>
+                </td>
+            </tr>
+        }
+
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">No Results</div>
+}

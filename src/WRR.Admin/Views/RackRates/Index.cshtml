@@ -1,0 +1,73 @@
+﻿@model RackRackViewModel
+
+@section HeadScripts {
+    <link href="~/css/smart-scheduler.css" rel="stylesheet" />
+    <style>
+
+        smart-grid {
+            width: 100%;
+            height: auto;
+        }
+    </style>
+}
+
+
+
+<h2>Rack Rates</h2>
+<hr />
+<div class="form-row">
+    <div class="col-md-5">
+        <form asp-action="Index" method="post">
+            <div class="form-horizontal">
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <div class="form-group">
+                    <label class="control-label">Room Types:</label>
+                    <div class="col-md-10">
+                        <select asp-for="@Model.SelectedRoomID" onchange="SelectRoom()" asp-items='new SelectList(Model.HotelRooms, "RoomTypeID", "Name")' class="custom-select">
+                                <option value="-1" selected>Select a Room</option>                           
+                        </select>                     
+                        <input type="submit" value="View Rack Rates" class="btn btn-primary mt-4" />
+                        <button type="button" id="btnAdd" onclick="AddClick()" class="btn btn-success mt-4" data-id="@Model.SelectedRoomID">Add Date Range</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div>
+    <div class='container mt-3 @(Model.SelectedRoomID >= 0 ? "show-display" : "no-display")'>
+        <component type="typeof(RackRateComp)" param-RoomID="@Model.SelectedRoomID" param-HotelID="@Model.HotelID" render-mode="ServerPrerendered" />
+    </div>
+</div>
+
+<div id="addModal" class="modal" role="dialog" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div id='addModalContent'></div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function AddClick() {
+            var url = '/RackRates/OpenModal';
+            var roomID = $('#btnAdd').attr('data-id');           
+            alert(roomID);
+            if (roomID >= 0) {
+                $.get(url, { id: roomID }, function (data) {
+                    $('#addModalContent').html(data);
+                    $('#addModal').modal('show');
+                });
+            }
+            else { alert("Select Room Type is required"); }
+        }
+        function SelectRoom() {
+            var selectedRoomTypeID = document.getElementById("SelectedRoomID").value;
+            // Set the value of Model.SelectedRoomTypeID
+            document.getElementById("btnAdd").dataset.id = selectedRoomTypeID;
+        }
+    </script>
+
+}

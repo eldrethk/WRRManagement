@@ -1,0 +1,97 @@
+﻿@model IEnumerable<Package>
+
+    <h2>Packages</h2>
+    <p>
+        <a asp-action="Create" asp-controller="Packages">Create New</a>
+    </p>
+
+@if(Enumerable.Count(Model) > 0)
+{
+    <table class="table table-responsive-sm">
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Name)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ValidFrom)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.ValidTo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Visible)
+            </th>
+            <th class="text-center">
+                @Html.DisplayNameFor(model => model.PackageAllocation)
+            </th>
+            <th class="text-center">
+                Special's Page
+            </th>          
+            <th class="text-center">
+                @Html.DisplayNameFor(model => model.Amenity)
+            </th>
+            <th class="text-center">
+                @Html.DisplayNameFor(model => model.PricePoint)
+            </th>
+            <th></th>
+        </tr>
+        @foreach(var item in Model)
+        {
+            <tr>
+                <td>@item.Name</td>
+                <td>@item.ValidFrom</td>
+                <td>@item.ValidTo</td>
+                <td>
+                    @if(item.Visible)
+                    {
+                        <span class="badge badge-pill badge-success">On</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-danger">Off</span>
+                    }
+                </td>
+                <td class="text-center">
+                    @if (item.PackageAllocation)
+                    {
+                        <span class="badge badge-pill badge-primary">True</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-secondary">False</span>
+                    }                 
+                </td>
+                <td class="text-center">
+                    @if(item.SpecialPage)
+                    {
+                        <span class="badge badge-pill badge-success">On</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-pill badge-danger">Off</span>
+                    }
+                </td>
+                
+                <td class="text-center">
+                   <a asp-action="Index" asp-controller="PackageAmenity" asp-route-id="@item.PackageID" class="fas fa-spa fa-2x text-info"></a>
+                </td>
+                <td class="text-center">
+                    @if (item.PricePoint)
+                    {
+                        <a asp-action="Details" asp-controller="PackageRackRate" asp-route-id="@item.PackageID" class="btn btn-outline-success">Add Rates</a>
+                    }
+                </td>
+                <td class="text-nowrap align-middle">
+                    <a asp-action="Edit" asp-controller="Packages" asp-route-id="@item.PackageID">Edit</a> |
+                    <a asp-action="Details" asp-controller="Packages" asp-route-id="@item.PackageID">Details</a> |
+                    <a asp-action="Delete" asp-controller="Packages" asp-route-id="@item.PackageID" asp-route-name="@item.Name" onclick="return confirm('Are you sure you want to delete?');">Delete</a> |
+                    <a asp-action="Special" asp-controller="Specials" asp-area="Reserv" asp-route-id="@item.HotelID" asp-route-packageid="@item.PackageID" target="_blank">Review</a>
+                </td>
+            </tr>
+        }
+    </table>
+}
+else
+{
+    <div class="alert alert-warning">No Results</div>
+}

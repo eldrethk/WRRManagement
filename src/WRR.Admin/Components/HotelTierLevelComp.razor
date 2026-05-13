@@ -1,0 +1,147 @@
+﻿@rendermode RenderMode.InteractiveServer
+
+@inject ITierLevelRepository tierlevelService
+
+<div>  
+    <div id='calendar'>
+        <Scheduler @ref="scheduler" DataSource="dataRecords" View="SchedulerViewType.Month" OnItemClick="OnItemClick" OnChange="OnChange" ShadeUntilCurrentTime="true" DisableWindowEditor="true" DisableDateMenu="true" DisableEventMenu="true" DisableContextMenu="true" DisableAutoScroll="true" DisableDrag="true" DisableResize="true">
+        </Scheduler>
+    </div>
+</div>
+
+<Modal @ref="modal">
+    <HeaderTemplate>
+        <h2 class="modal-title text-primary form-padding-left">Tier Level</h2>
+    </HeaderTemplate>
+    <BodyTemplate>
+        <div class="form-horizontal modal-body">           
+            <div class="form-group">
+                <label class="control-label col-md-4">Date:</label>
+                <div class="col-md-10">
+                    @currentEvent.TierDate.ToShortDateString()
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="control-label col-md-4">Quantity:</label>
+                <div class="col-md-10">
+                    <InputSelect @bind-Value="@currentEvent.Tier" class="custom-select">
+                        <option value="A">A</option>
+                        <option value="B">B</option>
+                        <option value="C">C</option>
+                    </InputSelect>                       
+                </div>
+            </div>
+        </div>
+    </BodyTemplate>
+    <FooterTemplate>
+        <button class="btn btn-success" @onclick="Save">Save</button>
+        <button class="btn btn-secondary" @onclick="Close">Close</button>
+    </FooterTemplate>
+</Modal>
+
+@code {
+    [Parameter]
+    public int HotelID { get; set; }
+
+    private Scheduler scheduler = null;
+    private TierLevel currentEvent = new TierLevel();
+    private List<SchedulerDataSource> dataRecords = new();
+    private List<TierLevel> tierLevelList = new();
+
+    private Modal modal = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if(HotelID> 0)
+        {
+            tierLevelList = (await tierlevelService.GetAllForHotelAsync(HotelID)).ToList();
+            dataRecords = tierLevelList.Select(ConvertTierLevelToSchedulerDataSource).ToList();
+        }
+        await base.OnInitializedAsync();
+    }
+
+    public async Task Save()
+    {       
+        if(currentEvent.TierLevelID > 0)
+        {
+            await tierlevelService.UpdateAsync(currentEvent.Tier, currentEvent.TierLevelID);
+            dataRecords.Remove(dataRecords.Find(x => x.Id == currentEvent.TierLevelID.ToString()));
+        }
+        else if(currentEvent.TierDate > DateTime.MinValue)
+        {
+            var newTierLevel = new TierLevel { HotelID = HotelID, TierDate = currentEvent.TierDate, Tier = currentEvent.Tier };
+            int tierlevelId = await tierlevelService.AddAsync(newTierLevel);
+            currentEvent.TierLevelID = tierlevelId;
+        }
+        var updateEvent = ConvertTierLevelToSchedulerDataSource(currentEvent);
+        dataRecords.Add(updateEvent);
+        dataRecords = new List<SchedulerDataSource>(dataRecords);
+
+        await modal.HideAsync();
+        currentEvent = new TierLevel();
+        scheduler.Refresh();
+
+    }
+
+    public void Close()
+    {
+        modal.HideAsync();
+    }
+
+    public async Task OnChange(Event ev)
+    {
+        if(ev.TryGetValue("detail", out var detailObj))
+        {
+            if(detailObj is JsonElement jsonElement)
+            {
+                if(jsonElement.TryGetProperty("dateStart", out var dateStartprop))
+                {
+                    currentEvent.TierDate = dateStartprop.GetDateTime();
+                    currentEvent.Tier = 'A';
+                }
+            }
+        }
+        if (currentEvent.TierDate >= DateTime.Today)
+            await modal.ShowAsync();
+    }
+
+    public async Task OnItemClick(Event ev)
+    {
+        SchedulerItemClickEventDetail itemClickEventDetail = ev["Detail"];
+        var obj = itemClickEventDetail.ItemObj;
+        SchedulerEvent schedulerEvent = obj.ToObject<SchedulerEvent>() ?? new SchedulerEvent();
+
+        currentEvent = new TierLevel
+            {
+                TierDate = Convert.ToDateTime(schedulerEvent.DateStart),
+                Tier = Convert.ToChar(schedulerEvent.Label),
+                TierLevelID = Convert.ToInt32(schedulerEvent.Id)
+            };
+        await modal.ShowAsync();
+
+    }
+
+    public SchedulerDataSource ConvertTierLevelToSchedulerDataSource(TierLevel model)
+    {
+        if (model == null)
+            throw new ArgumentNullException(nameof(model));
+
+        string color = "#008CBA";
+        if (model.Tier == 'A')
+            color = "#008CBA";
+        else if (model.Tier == 'B')
+            color = "#5BC0DE";
+        else if (model.Tier == 'C')
+            color = "#008CBA";
+
+        return new SchedulerDataSource()
+            {
+                Id = model.TierLevelID.ToString(),
+                Label = model.Tier.ToString(),
+                DateStart = model.TierDate,
+                DateEnd = model.TierDate,
+                AllDay = true,
+                Color = color
+            };
+    }
+}

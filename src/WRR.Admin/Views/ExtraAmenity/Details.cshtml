@@ -1,0 +1,73 @@
+﻿@model AmenityViewModel
+
+<h2>Extra Amenity Details</h2>
+<div>
+    <hr />
+    <dl class="dl-horizontal">
+        <dt><label asp-for="@Model.Amenity.Name"></label></dt>
+        <dd>@Model.Amenity.Name</dd>
+        <dt><label asp-for="@Model.Amenity.Description"></label></dt>
+        <dd>@Html.Raw(Model.Amenity.Description)</dd>
+        <dt><label asp-for="@Model.Amenity.ShortDescription"></label></dt>
+        <dd>@Model.Amenity.ShortDescription</dd>
+        <dt><label asp-for="@Model.Amenity.PictureUrl"></label></dt>
+        <dd>
+            @if(Model.Amenity.PictureUrl.Length > 0)
+            {
+                <img src="@Url.Content($"~/img/amenity-images/{Model.Amenity.PictureUrl}")" id="AmenityImage" width="200" height="200" />
+            }
+            else
+            {
+                <span class="badge badge-pill badge-secondary">No Image</span>
+            }        
+        </dd>
+        <dt><label asp-for="@Model.Amenity.AmenityRate"></label></dt>
+        <dd>@Model.Amenity.AmenityRate</dd>
+        <dt><label asp-for="@Model.Amenity.Tax"></label></dt>
+        <dd>@Model.Amenity.Tax</dd>
+        <dt><label asp-for="@Model.Amenity.ViewOnRackRate"></label></dt>
+        <dd>
+            @if (Model.Amenity.ViewOnRackRate)
+            {
+               <span class="badge badge-pill badge-primary">True</span>
+            }
+            else
+            {
+                <span class="badge badge-pill badge-secondary">False</span>
+            }
+        </dd>
+        <dt>Amenity Type</dt>
+        <dd>@Model.AmenityType</dd>
+        @if(Model.Amenity.Discount)
+        {
+            <dt>Discount</dt>
+            <dd>@Model.Amenity.Discount</dd>
+        }
+        <div class="w-50 mb-5">
+            <ul class="list-group">
+                <li class="list-group-item bg-secondary text-white">Packages associated:</li>
+                @if(Model.Packages != null)
+                {
+                    foreach(var package in Model.Packages)
+                    {
+                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                            <a asp-action="Details" asp-controller="Packages" asp-route-id="@package.PackageID">@package.Name</a>
+                        </li>
+                    }
+                }
+                else
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        None
+                    </li>
+                }
+            </ul>
+        </div>
+    </dl>
+
+</div>
+<p>
+    <a asp-action="Edit" asp-route-id="@Model.Amenity.AmenityID">Edit</a> |
+    <a asp-action="Index">Back to List</a>
+</p>
+

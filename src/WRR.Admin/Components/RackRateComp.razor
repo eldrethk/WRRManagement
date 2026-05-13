@@ -1,0 +1,176 @@
+﻿@rendermode RenderMode.InteractiveServer
+
+
+<h3 class="text-info text-center">@RoomName</h3>
+<Smart.Blazor.Grid @ref="multGrid" ColumnMenu="@columnMenu" DataSource="dataRecords" ConditionalFormatting="conditionalFormat" OnEndEdit="OnEndEdit" GroupHeader="@gridGroupHeader" Grouping="@grouping" Editing="@editing">
+    <Smart.Blazor.Columns>
+        <Smart.Blazor.Column DataField="RackRateID" Label="ID" Visible="false"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="RoomName" Label="Room Name" Visible="false"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="StartDate" Label="Start Date" DataType="date" CellsFormat="ddd, MMM dd, yyyy" ValidationRules="@dateValidationRules"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="EndDate" Label="End Date" DataType="date" CellsFormat="ddd, MMM dd, yyyy" ValidationRules="@dateValidationRules"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="TierARate" Label="Tier A" DataType="number" CellsAlign="HorizontalAlignment.Center" CellsFormat="c2" ValidationRules="@currencyValidationRules"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="TierBRate" Label="Tier B" DataType="number" CellsAlign="HorizontalAlignment.Center" CellsFormat="c2" ValidationRules="@currencyValidationRules"></Smart.Blazor.Column>
+        <Smart.Blazor.Column DataField="TierCRate" Label="Tier C" DataType="number" CellsAlign="HorizontalAlignment.Center" CellsFormat="c2" ValidationRules="@currencyValidationRules"></Smart.Blazor.Column>
+    </Smart.Blazor.Columns>   
+</Smart.Blazor.Grid>
+
+
+@code {
+    [Inject] private IRoomTypeRepository roomTypeService { get; set; } = default!;
+    [Inject] private IRackRateRepository rackRateService { get; set; } = default!;
+
+    [Parameter]
+    public int RoomID { get; set; }
+    [Parameter]
+    public int HotelID { get; set; }
+
+    public string RoomName { get; set; } = string.Empty;
+
+    private List<RackRateModel> dataRecords = new List<RackRateModel>();
+
+    public Grid multGrid = default!;
+
+    GridEditing editing = new GridEditing()
+        {
+            Enabled = true,
+            Mode = GridEditingMode.Row,
+            Action = GridEditingAction.Click,
+
+        };
+
+    GridGrouping grouping = new GridGrouping()
+        {
+            Enabled = true,
+            GroupBar = new GridGroupingGroupBar() { Visible = false },
+            AutoExpandAll = true,
+            GroupBy = new string[]{"RoomName"},
+            RenderMode = GridGroupingRenderMode.Basic
+
+
+        };
+    GridColumnMenu columnMenu = new GridColumnMenu()
+        {
+            Enabled = false
+        };
+
+    GridGroupHeader gridGroupHeader = new GridGroupHeader() { Visible = false };
+
+    IList<GridConditionalFormatting> conditionalFormat = new List<GridConditionalFormatting>()
+    {
+        new GridConditionalFormatting()
+        {
+            Column = "TierARate",
+            Condition = GridConditionalFormattingCondition.Equal,
+            FirstValue = 0,
+            Text = "#FFFFFF",
+            Highlight = "#FF0000"
+        }, 
+        new GridConditionalFormatting()
+        {
+            Column = "TierBRate",
+            Condition = GridConditionalFormattingCondition.Equal,
+            FirstValue = 0,
+            Text = "#FFFFFF",
+            Highlight = "#FF0000"
+        },
+        new GridConditionalFormatting()
+        {
+            Column = "TierCRate",
+            Condition = GridConditionalFormattingCondition.Equal,
+            FirstValue = 0,
+            Text = "#FFFFFF",
+            Highlight = "#FF0000"
+        }
+    };
+
+    IList<IDictionary<string, object>> dateValidationRules = new List<IDictionary<string, object>>()
+    {
+       new Dictionary<string, object>() { { "type", "required" } }
+    };
+
+    IList<IDictionary<string, object>> currencyValidationRules = new List<IDictionary<string, object>>()
+    {
+        new Dictionary<string, object>(){{"type", "required"}}
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (RoomID > 0)
+        {
+            dataRecords = await GetDataAsync(RoomID);
+            RoomName = (await roomTypeService.GetByIdAsync(RoomID)).Name ?? string.Empty;
+        }
+        else
+        {
+            RoomName = "All Rooms";
+            var roomList = (await roomTypeService.GetAllForHotelAsync(HotelID)).ToList();
+            foreach (var room in roomList)
+            {
+                dataRecords.AddRange(await GetDataAsync(room.RoomTypeID));
+            }
+        }
+        await base.OnInitializedAsync();
+    }
+
+    private async Task<List<RackRateModel>> GetDataAsync(int roomID)
+    {
+        List<RackRateModel> rackRates = new List<RackRateModel>();
+        string roomname = (await roomTypeService.GetByIdAsync(roomID)).Name ?? string.Empty;
+        var rackRatesList = (await rackRateService.GetAllByRoomIdAsync(roomID)).ToList();
+        foreach (var rackRate in rackRatesList)
+        {
+            rackRates.Add(new RackRateModel
+            {
+                RackRateID = rackRate.RackRateID,
+                RoomName = roomname,
+                StartDate = rackRate.StartDate,
+                EndDate = rackRate.EndDate,
+                TierARate = rackRate.TierARate,
+                TierBRate = rackRate.TierBRate,
+                TierCRate = rackRate.TierCRate
+            });
+        }
+
+        return rackRates;
+    }
+
+    private async Task OnEndEdit(Event ev)
+    {
+        GridEndEditEventDetail endEditEventDetail = new GridEndEditEventDetail();
+        if (ev.TryGetValue("detail", out var detailObj))
+        {
+            if(detailObj is JsonElement element)
+            {
+                var obj = element.GetProperty("data").ToString();
+                var dataObj = JsonSerializer.Deserialize<Dictionary<string, object>>(obj);
+                RackRate updRackRate = ConvertOjbectToRackRate(dataObj);
+                if(updRackRate.RackRateID > 0)
+                    await rackRateService.UpdateAsync(updRackRate);
+
+                multGrid.Refresh();
+            }          
+        }
+    }
+
+    public RackRate ConvertOjbectToRackRate(Dictionary<string, object> dataObj)
+    {
+        var rackRate = new RackRate();
+        try{
+        rackRate.RackRateID = Convert.ToInt32(dataObj["RackRateID"].ToString());
+        rackRate.RoomTypeID = RoomID;
+        rackRate.StartDate = Convert.ToDateTime(dataObj["StartDate"].ToString());
+        rackRate.EndDate = Convert.ToDateTime(dataObj["EndDate"].ToString());
+  
+        rackRate.TierARate = Convert.ToDecimal(dataObj["TierARate"].ToString());
+        rackRate.TierBRate = Convert.ToDecimal(dataObj["TierBRate"].ToString());
+        rackRate.TierCRate = Convert.ToDecimal(dataObj["TierCRate"].ToString());
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        return rackRate;
+    }
+
+
+}

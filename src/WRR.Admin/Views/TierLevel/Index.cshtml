@@ -1,0 +1,50 @@
+﻿@model TierLevelViewModel
+
+@section HeadScripts {
+    <link href="~/css/smart-scheduler.css" rel="stylesheet" />
+}
+<h2>Hotel Tier Levels</h2>
+<hr />
+<div class="form-row">
+    <div class="col-md-3">
+        <form asp-action="Index" asp-controller="TierLevel" method="post">
+            <div class="form-horizontal">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <div class="form-group">
+                    <label asp-for=@Model.StartDate class="control-label col-md-4"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.StartDate" class="form-control" />
+                        <span asp-validation-for="@Model.StartDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="@Model.EndDate" class="control-label col-md-4"></label>
+                    <div class="col-md-10">
+                        <input asp-for="@Model.EndDate" class="form-control" />
+                        <span asp-validation-for="@Model.EndDate" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label asp-for="@Model.TierLevel" class="control-label col-md-4"></label>
+                    <div class="col-md-10">
+                        <select asp-for="@Model.TierLevel" class="custom-select">
+                            <option value="A">A</option>
+                            <option value="B">B</option>
+                            <option value="C">C</option>
+                        </select>                      
+                        <span asp-validation-for="@Model.TierLevel" class="text-danger"></span>
+                    </div>
+                </div>
+                <input type="submit" value="Add Date Range" class="btn btn-success mt-4" />
+            </div>
+        </form>
+
+        <div class="alert alert-dismissible alert-warning mt-4">
+            <button type="button" class="close" data-bs-dismiss="alert">&times;</button>
+            <strong>Heads up!</strong> If a date does not display a tier level, it will automatically be set to Tier A
+        </div>
+    </div>
+    <div class="col-md-9">
+        <component type="typeof(HotelTierLevelComp)" param-hotelId="@Model.SelectedID" render-mode="ServerPrerendered" />
+    </div>
+</div>

@@ -16,15 +16,22 @@ namespace WRRManagement.Infrastructure.Repositories
         public async Task<int> AddAsync(RackRate rackRate)
         {
             var parameters = new {
-                Start = rackRate.StartDate, 
+                Start = rackRate.StartDate,
                 End = rackRate.EndDate,
                 RoomID = rackRate.RoomTypeID,
                 TierA = rackRate.TierARate,
                 TierB = rackRate.TierBRate,
-                TierC = rackRate.TierCRate
-
+                TierC = rackRate.TierCRate,
+                TierD = rackRate.TierDRate,
+                Monthly = rackRate.Monthly
             };
             return await ExecuteScalarIntAsync("dbo.genInsRackRate", parameters);
+        }
+
+        public async Task<bool> CheckDatesAysnc(int roomID, DateTime startDate, DateTime endDate)
+        {
+            var parameters = new { roomid = roomID, startDate = startDate, endDate = endDate };
+            return await ExecuteScalarBoolAsync("dbo.genVerifyDateRange", parameters);
         }
 
         public async Task<IEnumerable<RackRate>> GetAllByRoomIdAsync(int roomId)
@@ -61,8 +68,9 @@ namespace WRRManagement.Infrastructure.Repositories
                 RoomID = rackRate.RoomTypeID,
                 TierA = rackRate.TierARate,
                 TierB = rackRate.TierBRate,
-                TierC = rackRate.TierCRate
-
+                TierC = rackRate.TierCRate,
+                TierD = rackRate.TierDRate,
+                Monthly = rackRate.Monthly
             };
             await ExecuteAsync("dbo.genUpdRackRate", parameters);
         }

@@ -6,7 +6,7 @@ using WRRManagement.Infrastructure.Data;
 
 namespace WRRManagement.Infrastructure.Repositories
 {
-    public class RoomAllocationRepository : DapperRepository, IRoomAllocation
+    public class RoomAllocationRepository : DapperRepository, IRoomAllocationRepository
     {
         public RoomAllocationRepository(IDbConnectionFactory dbConnectionFactory): base(dbConnectionFactory) { }
 
@@ -17,6 +17,17 @@ namespace WRRManagement.Infrastructure.Repositories
                 RoomID = allocation.RoomTypeID,
                 Date = allocation.AllocateDate,
                 Quantity = allocation.Quantity
+            };
+            return await ExecuteScalarIntAsync("dbo.genInsAllocation", parameters);
+        }
+
+        public async Task<int> AddAsync(int roomTypeID, DateTime date, int qty)
+        {
+            var parameters = new
+            {
+                RoomID = roomTypeID,
+                Date = date,
+                Quantity = qty
             };
             return await ExecuteScalarIntAsync("dbo.genInsAllocation", parameters);
         }
@@ -56,6 +67,19 @@ namespace WRRManagement.Infrastructure.Repositories
         {
             var parameters =new {AllocationID = allocationId, Quantity = qty};
             await ExecuteAsync("dbo.genUpdAllocation", parameters);
+        }
+
+        public async Task AddDateRangeAsync(int RoomTypeId, DateTime start, DateTime end, int qty)
+        {
+            if(start > DateTime.MinValue && end > DateTime.MinValue)
+            {
+                DateTime temp = start;
+                while(temp <= end)
+                {
+                    await AddAsync(RoomTypeId, temp, qty);
+                    temp = temp.AddDays(1);
+                }
+            }
         }
 
         public async Task<int> LowestAllocationAsync(int roomTypeId, DateTime start, DateTime end)

@@ -1,0 +1,137 @@
+﻿@model WRRManagement.Core.Entities.Hotel
+@{
+    ViewData["Title"] = "Index";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Hotel Info</h2>
+<hr />
+<div class="form-horizontal">
+    <form asp-action="Index">
+        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+        <input type="hidden" asp-for="@Model.HotelID" />
+
+        <div class="form-group">
+            <label asp-for="@Model.Name" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.Name" class="form-control" />
+                <span asp-validation-for="@Model.Name" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.Email" class="control-label col-md-2"></label>          
+            <div class="col-md-10">
+                <input asp-for="@Model.Email" class="form-control" />
+                <span asp-validation-for="@Model.Email" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.AdminEmail" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.AdminEmail" class="form-control" />
+                <span asp-validation-for="@Model.AdminEmail" class="text-danger"></span>
+            </div>
+        </div>
+        <div class="form-group">
+            <label asp-for="@Model.Address1" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.Address1" class="form-control" />
+                <span asp-validation-for="@Model.Address1" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.Address2" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+               <input asp-for="@Model.Address2" class="form-control" />
+                <span asp-validation-for="@Model.Address2" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.City" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+               <input asp-for="@Model.City" class="form-control" />
+                <span asp-validation-for="@Model.City" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.State" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                 <input asp-for="@Model.State" class="form-control" />
+                <span asp-validation-for="@Model.State" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.ZipCode" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                 <input asp-for="@Model.ZipCode" class="form-control" />
+                <span asp-validation-for="@Model.ZipCode" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.TollFreePhone" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                 <input asp-for="@Model.TollFreePhone" class="form-control" />
+                <span asp-validation-for="@Model.TollFreePhone" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.LocalPhone" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.LocalPhone" class="form-control" />
+                <span asp-validation-for="@Model.LocalPhone" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.Website" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                 <input asp-for="@Model.Website" class="form-control" />
+                <span asp-validation-for="@Model.Website" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.CheckIn" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.CheckIn" class="form-control" />
+                <span asp-validation-for="@Model.CheckIn" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label asp-for="@Model.CheckOut" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <input asp-for="@Model.CheckOut" class="form-control" />
+                <span asp-validation-for="@Model.CheckOut" class="text-danger"></span>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label asp-for="@Model.Description" class="control-label col-md-2"></label>
+            <div class="col-md-10">
+                <textarea asp-for="@Model.Description" class="form-control" rows="5"></textarea>
+                <span asp-validation-for="@Model.Description" class="text-danger"></span>
+            </div>
+        </div>
+
+
+        <div class="row m-5 justify-content-center">
+            <div class="form-row">
+                <div class="col-6 text-right pr-2">
+                    <input type="submit" value="Save" class="btn btn-primary btn-lg" />
+                </div>
+                <div class="col-6 my-auto">
+                    <a asp-action="Dashboard" asp-controller="Home">Back</a>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

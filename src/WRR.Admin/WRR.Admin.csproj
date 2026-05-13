@@ -1,0 +1,56 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>aspnet-WRR8_0-6cbc1048-44d8-4cd3-985a-6d6f4453b903</UserSecretsId>
+    <RootNamespace>WRR.Admin</RootNamespace>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\Migrations\**" />
+    <Content Remove="Data\Migrations\**" />
+    <EmbeddedResource Remove="Data\Migrations\**" />
+    <None Remove="Data\Migrations\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Data\RoomAllocationToSchedulerData.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Blazor.Bootstrap" Version="3.3.0" />
+    <!--  Microsoft.AspNetCore.Components is included by the SDK in net9.0 — no explicit ref needed  -->
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="9.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.0">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="9.0.0" />
+    <PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
+    <PackageReference Include="Serilog.Sinks.File" Version="7.0.0" />
+    <PackageReference Include="Smart.Blazor" Version="20.0.64" />
+    <PackageReference Include="X.PagedList" Version="10.5.1" />
+    <PackageReference Include="X.PagedList.Mvc.Core" Version="10.5.1" />
+  </ItemGroup>
+
+  <ItemGroup>    
+    <ProjectReference Include="..\WRRManagement.Core\WRRManagement.Core.csproj" />
+    <ProjectReference Include="..\WRRManagement.Application\WRRManagement.Application.csproj" />
+    <ProjectReference Include="..\WRRManagement.Infrastructure\WRRManagement.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="wwwroot\img\awesome-steps\" />
+    <Folder Include="wwwroot\img\amenity-images\" />
+    <Folder Include="wwwroot\img\package-images\" />
+    <Folder Include="wwwroot\img\room-images\" />
+  </ItemGroup>
+
+</Project>
