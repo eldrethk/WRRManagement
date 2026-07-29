@@ -33,7 +33,8 @@ Sections:
      allocation locking hint)
   8. Package Rate procs (new - needed by the PricePoint quote path, didn't exist)
   9. MinStay procs (found while testing Stay Restrictions - same ID-only bug)
-  10. RackRate procs (found while testing Rack Rates - missing @Monthly param)
+  10. RackRate: drop TierD/Monthly columns, fix all five RackRate procs
+      (three were ID-only stubs - see section header for why this one matters)
 ================================================================================
 */
 
@@ -682,30 +683,39 @@ END
 GO
 
 ----------------------------------------------------------------------------
--- 10. RackRate procs
+-- 10. RackRate: drop TierD/Monthly (system is Tier A/B/C only), fix procs
 ----------------------------------------------------------------------------
--- Found while testing Rack Rates: neither proc declared @Monthly, but
--- RackRateRepository.AddAsync/UpdateAsync always send it - "too many
--- arguments specified" on every insert/update. genUpdRackRate was also
--- missing @RoomID for the same reason. RackRates.MonthlyRate/TierDRate
--- both already exist as real columns - they just weren't wired up.
+-- Superseded: an earlier version of this section wired up @Monthly/TierD
+-- (found while testing Rack Rates - neither proc originally declared
+-- @Monthly, which is what caused "too many arguments specified"). Per a
+-- follow-up decision, Monthly/Tier D are being removed from the system
+-- entirely rather than fixed - the Admin grid (RackRateComp.razor) never
+-- exposed either field anyway. If you already applied the @Monthly-wired
+-- version of these procs, this replaces them.
+--
+-- Also fixes genSelRackRateByDate/genSelRackRateByID/genSelRackRateByRoomID:
+-- all three only ever SELECTed [RackRateID]. genSelRackRateByDate backs
+-- RoomQueryService's and QuoteService's nightly-rate lookup, so this meant
+-- every room price/quote/reservation was computing off TierARate/B/C = 0 -
+-- the most serious bug found in this whole review.
+ALTER TABLE dbo.RackRates DROP COLUMN TierDRate, MonthlyRate;
+GO
+
 CREATE OR ALTER PROCEDURE dbo.genInsRackRate
     @Start datetime,
     @End datetime,
     @RoomID int,
     @TierA decimal(18,2),
     @TierB decimal(18,2),
-    @TierC decimal(18,2),
-    @TierD decimal(18,2),
-    @Monthly decimal(18,2)
+    @TierC decimal(18,2)
 AS
 BEGIN
     SET NOCOUNT ON;
 
     INSERT INTO dbo.RackRates
-        (StartDate, EndDate, RoomTypeID, TierARate, TierBRate, TierCRate, TierDRate, MonthlyRate, Visible)
+        (StartDate, EndDate, RoomTypeID, TierARate, TierBRate, TierCRate, Visible)
     VALUES
-        (@Start, @End, @RoomID, @TierA, @TierB, @TierC, @TierD, @Monthly, 1);
+        (@Start, @End, @RoomID, @TierA, @TierB, @TierC, 1);
 
     SELECT CAST(SCOPE_IDENTITY() AS int);
 END
@@ -718,9 +728,7 @@ CREATE OR ALTER PROCEDURE dbo.genUpdRackRate
     @RoomID int,
     @TierA decimal(18,2),
     @TierB decimal(18,2),
-    @TierC decimal(18,2),
-    @TierD decimal(18,2),
-    @Monthly decimal(18,2)
+    @TierC decimal(18,2)
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -730,9 +738,45 @@ BEGIN
         EndDate = @End,
         TierARate = @TierA,
         TierBRate = @TierB,
-        TierCRate = @TierC,
-        TierDRate = @TierD,
-        MonthlyRate = @Monthly
+        TierCRate = @TierC
     WHERE RackRateID = @RateID;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genSelRackRateByRoomID
+    @RoomID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT RackRateID, RoomTypeID, StartDate, EndDate, TierARate, TierBRate, TierCRate, Visible
+    FROM dbo.RackRates
+    WHERE RoomTypeID = @RoomID AND CONVERT(date, EndDate) >= CONVERT(date, GETDATE()) AND Visible = 1
+    ORDER BY StartDate;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genSelRackRateByID
+    @RackRateID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT RackRateID, RoomTypeID, StartDate, EndDate, TierARate, TierBRate, TierCRate, Visible
+    FROM dbo.RackRates
+    WHERE RackRateID = @RackRateID;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genSelRackRateByDate
+    @RoomID int,
+    @Temp datetime
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT RackRateID, RoomTypeID, StartDate, EndDate, TierARate, TierBRate, TierCRate, Visible
+    FROM dbo.RackRates
+    WHERE RoomTypeID = @RoomID AND @Temp BETWEEN StartDate AND EndDate AND Visible = 1;
 END
 GO

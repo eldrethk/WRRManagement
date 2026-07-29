@@ -7,6 +7,7 @@ using WRR.Admin.Data;
 using WRRManagement.Application.Amenities;
 using WRRManagement.Application.Hotels;
 using WRRManagement.Application.Marketing;
+using WRRManagement.Application.Pricing;
 using WRRManagement.Application.Reservations;
 using WRRManagement.Application.Rooms;
 using WRRManagement.Core.Interfaces;
@@ -69,6 +70,7 @@ try
     builder.Services.AddScoped<IPackageAmenityRepository, PackageAmenityRepository>();
     builder.Services.AddScoped<IPackageTierLevelRepository, PackageTierLevelRepository>();
     builder.Services.AddScoped<IPackageAllocationRepository, PackageAllocationRepository>();
+    builder.Services.AddScoped<IPackageRateRepository, PackageRateRepository>();
     // Also add IHotelUserRepository after Fix Type 4 is done
     // Amenities
     builder.Services.AddScoped<IExtraAmenityRepository, ExtraAmenityRepository>();
@@ -85,6 +87,7 @@ try
     builder.Services.AddScoped<IAmenityQueryService, AmenityQueryService>();
     builder.Services.AddScoped<IReservationService, ReservationService>();
     builder.Services.AddScoped<IMarketingService, MarketingService>();
+    builder.Services.AddScoped<IQuoteService, QuoteService>();
 
     // UI frameworks 
     builder.Services.AddRazorComponents().AddInteractiveServerComponents();

@@ -21,9 +21,7 @@ namespace WRRManagement.Infrastructure.Repositories
                 RoomID = rackRate.RoomTypeID,
                 TierA = rackRate.TierARate,
                 TierB = rackRate.TierBRate,
-                TierC = rackRate.TierCRate,
-                TierD = rackRate.TierDRate,
-                Monthly = rackRate.Monthly
+                TierC = rackRate.TierCRate
             };
             return await ExecuteScalarIntAsync("dbo.genInsRackRate", parameters);
         }
@@ -68,9 +66,7 @@ namespace WRRManagement.Infrastructure.Repositories
                 RoomID = rackRate.RoomTypeID,
                 TierA = rackRate.TierARate,
                 TierB = rackRate.TierBRate,
-                TierC = rackRate.TierCRate,
-                TierD = rackRate.TierDRate,
-                Monthly = rackRate.Monthly
+                TierC = rackRate.TierCRate
             };
             await ExecuteAsync("dbo.genUpdRackRate", parameters);
         }
