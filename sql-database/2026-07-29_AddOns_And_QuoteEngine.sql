@@ -33,6 +33,7 @@ Sections:
      allocation locking hint)
   8. Package Rate procs (new - needed by the PricePoint quote path, didn't exist)
   9. MinStay procs (found while testing Stay Restrictions - same ID-only bug)
+  10. RackRate procs (found while testing Rack Rates - missing @Monthly param)
 ================================================================================
 */
 
@@ -677,5 +678,61 @@ BEGIN
     SELECT MinStayID, RoomTypeID, StayDate, MinNightStay AS Quantity
     FROM dbo.MinStay
     WHERE MinStayID = @MinStayID;
+END
+GO
+
+----------------------------------------------------------------------------
+-- 10. RackRate procs
+----------------------------------------------------------------------------
+-- Found while testing Rack Rates: neither proc declared @Monthly, but
+-- RackRateRepository.AddAsync/UpdateAsync always send it - "too many
+-- arguments specified" on every insert/update. genUpdRackRate was also
+-- missing @RoomID for the same reason. RackRates.MonthlyRate/TierDRate
+-- both already exist as real columns - they just weren't wired up.
+CREATE OR ALTER PROCEDURE dbo.genInsRackRate
+    @Start datetime,
+    @End datetime,
+    @RoomID int,
+    @TierA decimal(18,2),
+    @TierB decimal(18,2),
+    @TierC decimal(18,2),
+    @TierD decimal(18,2),
+    @Monthly decimal(18,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    INSERT INTO dbo.RackRates
+        (StartDate, EndDate, RoomTypeID, TierARate, TierBRate, TierCRate, TierDRate, MonthlyRate, Visible)
+    VALUES
+        (@Start, @End, @RoomID, @TierA, @TierB, @TierC, @TierD, @Monthly, 1);
+
+    SELECT CAST(SCOPE_IDENTITY() AS int);
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genUpdRackRate
+    @RateID int,
+    @Start datetime,
+    @End datetime,
+    @RoomID int,
+    @TierA decimal(18,2),
+    @TierB decimal(18,2),
+    @TierC decimal(18,2),
+    @TierD decimal(18,2),
+    @Monthly decimal(18,2)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    UPDATE dbo.RackRates
+    SET StartDate = @Start,
+        EndDate = @End,
+        TierARate = @TierA,
+        TierBRate = @TierB,
+        TierCRate = @TierC,
+        TierDRate = @TierD,
+        MonthlyRate = @Monthly
+    WHERE RackRateID = @RateID;
 END
 GO
