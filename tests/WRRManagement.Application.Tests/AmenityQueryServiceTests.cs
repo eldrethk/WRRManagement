@@ -4,6 +4,7 @@ using NSubstitute;
 using Xunit;
 using WRRManagement.Application.Amenities;
 using WRRManagement.Core.Entities;
+using WRRManagement.Core.Enums;
 using WRRManagement.Core.Interfaces;
 
 namespace WRRManagement.Application.Tests;
@@ -85,7 +86,7 @@ public class AmenityQueryServiceTests
                 Tax = 1.50m,
                 Visible = true,
                 Mandatory = false,
-                PerDay = true
+                PricingType = AmenityPricingType.PerDay
             }
         ]);
 
@@ -96,6 +97,6 @@ public class AmenityQueryServiceTests
         dto.Name.Should().Be("Breakfast");
         dto.AmenityRate.Should().Be(15.00m);
         dto.Tax.Should().Be(1.50m);
-        dto.PerDay.Should().BeTrue();
+        dto.PricingType.Should().Be(AmenityPricingType.PerDay);
     }
 }

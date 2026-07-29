@@ -35,14 +35,15 @@ public class HotelQueryServiceTests
         var hotel = Hotel.Create(
             name: "Grand Hotel",
             email: "info@grand.com",
-            address: "123 Main St",
+            adminEmail: "admin@grand.com",
+            address1: "123 Main St",
             city: "Springfield",
             state: "IL",
             zipCode: "62701",
             localPhone: "555-1234",
             tollFreePhone: "800-555-0000",
-            checkInTime: "3:00 PM",
-            checkOutTime: "11:00 AM");
+            checkIn: "3:00 PM",
+            checkOut: "11:00 AM");
         _hotelRepo.GetByIdAsync(1).Returns(hotel);
 
         var result = await _sut.GetHotelAsync(1);
@@ -51,8 +52,8 @@ public class HotelQueryServiceTests
         result!.Name.Should().Be("Grand Hotel");
         result.Email.Should().Be("info@grand.com");
         result.City.Should().Be("Springfield");
-        result.CheckInTime.Should().Be("3:00 PM");
-        result.CheckOutTime.Should().Be("11:00 AM");
+        result.CheckIn.Should().Be("3:00 PM");
+        result.CheckOut.Should().Be("11:00 AM");
     }
 
     [Fact]
