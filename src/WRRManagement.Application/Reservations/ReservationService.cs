@@ -1,4 +1,6 @@
 using Microsoft.Extensions.Logging;
+using WRRManagement.Application.Pricing;
+using WRRManagement.Application.Pricing.Dtos;
 using WRRManagement.Application.Reservations.Dtos;
 using WRRManagement.Core.Entities;
 using WRRManagement.Core.Interfaces;
@@ -9,42 +11,91 @@ namespace WRRManagement.Application.Reservations
     {
         private readonly IReservationRepository _reservationRepo;
         private readonly IReservationAmenityRepository _amenityRepo;
+        private readonly IRoomAllocationRepository _roomAllocationRepo;
+        private readonly IPackageAllocationRepository _packageAllocationRepo;
+        private readonly IQuoteService _quoteService;
         private readonly ILogger<ReservationService> _logger;
 
         public ReservationService(
             IReservationRepository reservationRepo,
             IReservationAmenityRepository amenityRepo,
+            IRoomAllocationRepository roomAllocationRepo,
+            IPackageAllocationRepository packageAllocationRepo,
+            IQuoteService quoteService,
             ILogger<ReservationService> logger)
         {
             _reservationRepo = reservationRepo;
             _amenityRepo = amenityRepo;
+            _roomAllocationRepo = roomAllocationRepo;
+            _packageAllocationRepo = packageAllocationRepo;
+            _quoteService = quoteService;
             _logger = logger;
         }
 
-        public async Task<int> CreateAsync(CreateReservationDto dto, CancellationToken ct = default)
+        public async Task<int> CreateAsync(CreateReservationDto dto, Guid? idempotencyKey, CancellationToken ct = default)
         {
+            if (idempotencyKey is Guid key)
+            {
+                var priorReservationId = await _reservationRepo.GetIdByIdempotencyKeyAsync(key);
+                if (priorReservationId is int existingId)
+                {
+                    _logger.LogInformation(
+                        "Idempotent replay for key {IdempotencyKey} returned existing reservation {ReservationId}",
+                        key, existingId);
+                    return existingId;
+                }
+            }
+
+            if (dto.ArrivalDate >= dto.DepartureDate)
+                throw new ArgumentException("Arrival date must be before departure date");
+
+            var roomAvailable = await _roomAllocationRepo.AllocationIsValidAsync(dto.RoomTypeId, dto.ArrivalDate, dto.DepartureDate);
+            if (!roomAvailable)
+                throw new InvalidOperationException("Room is no longer available for the selected dates");
+
+            if (dto.PackageId is int packageId)
+            {
+                var packageAvailable = await _packageAllocationRepo.IsValidAsync(dto.RoomTypeId, packageId, dto.ArrivalDate, dto.DepartureDate);
+                if (!packageAvailable)
+                    throw new InvalidOperationException("Package is no longer available for the selected dates");
+            }
+
+            // Pricing is always recomputed here — a client-submitted price is never trusted.
+            var quote = await _quoteService.GetQuoteAsync(new QuoteRequestDto
+            {
+                HotelId = dto.HotelId,
+                RoomTypeId = dto.RoomTypeId,
+                PackageId = dto.PackageId,
+                CheckIn = dto.ArrivalDate,
+                CheckOut = dto.DepartureDate,
+                Adults = dto.Adults,
+                Children = dto.Children,
+                Amenities = dto.Amenities
+            }, ct);
+
             var reservation = new Reservation
             {
                 HotelID = dto.HotelId,
                 RoomTypeID = dto.RoomTypeId,
+                PackageID = dto.PackageId,
                 PaymentTypeID = dto.PaymentTypeId,
                 ArrivalDate = dto.ArrivalDate,
                 DepartureDate = dto.DepartureDate,
-                TotalNights = dto.TotalNights,
+                TotalNights = quote.TotalNights,
                 Adults = dto.Adults,
                 Children = dto.Children,
-                AvgDailyRate = dto.AvgDailyRate,
-                SubTotal = dto.SubTotal,
-                TierLevel = dto.TierLevel,
-                ExtraAdultCharge = dto.ExtraAdultCharge,
-                ExtraChildCharge = dto.ExtraChildCharge,
-                WeekendFees = dto.WeekendFees,
-                ResortFees = dto.ResortFees,
-                TotalFees = dto.TotalFees,
-                Taxes = dto.Taxes,
-                TotalCharge = dto.TotalCharge,
-                Deposit = dto.Deposit,
-                ExtraFees = dto.ExtraFees,
+                AvgDailyRate = quote.TotalNights > 0 ? quote.SubTotal / quote.TotalNights : 0,
+                SubTotal = quote.SubTotal,
+                TierLevel = quote.TierLevel,
+                ExtraAdultCharge = quote.ExtraGuestFee,
+                ExtraChildCharge = 0,
+                WeekendFees = quote.WeekendFee,
+                ResortFees = quote.ResortFee,
+                TotalFees = quote.WeekendFee + quote.ResortFee + quote.ExtraGuestFee,
+                Taxes = quote.Tax,
+                TotalCharge = quote.Total,
+                Deposit = quote.Deposit,
+                ExtraFees = quote.AmenitiesSubTotal,
                 Comments = dto.Comments,
                 CardHolderName = dto.CardHolderName,
                 CardExpirationDate = dto.CardExpirationDate,
@@ -60,32 +111,52 @@ namespace WRRManagement.Application.Reservations
                 CusDayPhone = dto.CusDayPhone,
                 CusEveningPhone = dto.CusEveningPhone,
                 CusEmail = dto.CusEmail,
-                BookedAmenity = dto.Amenities.Count > 0,
+                BookedAmenity = quote.Amenities.Count > 0,
                 UserInitials = "WEB",
                 ReservationCreated = DateTime.UtcNow,
                 SessionID = dto.SessionId,
-                CustomerId = dto.CustomerId
+                CustomerId = dto.CustomerId,
+                IdempotencyKey = idempotencyKey
             };
 
-            var reservationId = await _reservationRepo.CreateAsync(reservation);
-
-            if (dto.DailyRates.Count > 0)
-                await _reservationRepo.AddDailyRatesAsync(reservationId, dto.DailyRates);
-
-            foreach (var amenity in dto.Amenities)
+            int reservationId;
+            try
             {
-                await _amenityRepo.AddAsync(new ReservationAmenity
+                reservationId = await _reservationRepo.CreateAsync(reservation);
+            }
+            catch (Exception) when (idempotencyKey is not null)
+            {
+                // A concurrent retry with the same key may have raced us to the unique index —
+                // return the winner's reservation instead of surfacing a duplicate-key error.
+                var winnerId = await _reservationRepo.GetIdByIdempotencyKeyAsync(idempotencyKey.Value);
+                if (winnerId is int id)
                 {
-                    ReservationID = reservationId,
-                    AmenityID = amenity.AmenityId,
-                    ChargeAmount = amenity.ChargeAmount,
-                    TaxIncluded = amenity.TaxIncluded,
-                    Mandatory = amenity.Mandatory,
-                    TaxRate = amenity.TaxRate,
-                    NumPeople = amenity.NumPeople,
-                    NumDate = amenity.NumDate,
-                    TotalCharge = amenity.TotalCharge
-                });
+                    _logger.LogInformation(
+                        "Reservation insert for idempotency key {IdempotencyKey} lost a race; returning existing reservation {ReservationId}",
+                        idempotencyKey, id);
+                    return id;
+                }
+                throw;
+            }
+
+            if (quote.RateDates.Count > 0)
+            {
+                var dailyRates = quote.RateDates.Zip(quote.DailyRates, (date, rate) => (date, rate));
+                await _reservationRepo.AddDailyRatesAsync(reservationId, dailyRates);
+            }
+
+            foreach (var amenity in quote.Amenities)
+            {
+                await _amenityRepo.AddAsync(ReservationAmenity.Create(
+                    reservationId,
+                    amenity.AmenityId,
+                    amenity.ChargeAmount,
+                    amenity.Tax,
+                    amenity.Mandatory,
+                    amenity.TaxRate,
+                    amenity.NumPeople,
+                    dto.ArrivalDate,
+                    amenity.TotalCharge));
             }
 
             _logger.LogInformation("Created reservation {ReservationId} for hotel {HotelId}", reservationId, dto.HotelId);

@@ -1,27 +1,22 @@
+using WRRManagement.Application.Pricing.Dtos;
+
 namespace WRRManagement.Application.Reservations.Dtos
 {
+    /// <summary>
+    /// Guest-selection input only — no price fields. ReservationService recomputes every price
+    /// via IQuoteService server-side; a client-submitted total is never trusted.
+    /// </summary>
     public class CreateReservationDto
     {
         public int HotelId { get; init; }
         public int RoomTypeId { get; init; }
+        public int? PackageId { get; init; }
         public int PaymentTypeId { get; init; }
         public DateTime ArrivalDate { get; init; }
         public DateTime DepartureDate { get; init; }
-        public int TotalNights { get; init; }
         public int Adults { get; init; }
         public int Children { get; init; }
-        public decimal AvgDailyRate { get; init; }
-        public decimal SubTotal { get; init; }
-        public char TierLevel { get; init; }
-        public decimal ExtraAdultCharge { get; init; }
-        public decimal ExtraChildCharge { get; init; }
-        public decimal WeekendFees { get; init; }
-        public decimal ResortFees { get; init; }
-        public decimal TotalFees { get; init; }
-        public decimal Taxes { get; init; }
-        public decimal TotalCharge { get; init; }
-        public decimal Deposit { get; init; }
-        public decimal ExtraFees { get; init; }
+        public IReadOnlyList<AmenitySelectionDto> Amenities { get; init; } = [];
         public string? Comments { get; init; }
         public string CardHolderName { get; init; } = string.Empty;
         public string CardExpirationDate { get; init; } = string.Empty;
@@ -39,7 +34,5 @@ namespace WRRManagement.Application.Reservations.Dtos
         public string CusEmail { get; init; } = string.Empty;
         public string? SessionId { get; init; }
         public int CustomerId { get; init; }
-        public IReadOnlyList<CreateReservationAmenityDto> Amenities { get; init; } = [];
-        public IReadOnlyList<(DateTime Date, decimal Rate)> DailyRates { get; init; } = [];
     }
 }

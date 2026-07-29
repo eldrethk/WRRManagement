@@ -4,6 +4,11 @@ namespace WRRManagement.Application.Reservations
 {
     public interface IReservationService
     {
-        Task<int> CreateAsync(CreateReservationDto dto, CancellationToken ct = default);
+        /// <summary>
+        /// Re-validates availability and recomputes pricing server-side before persisting.
+        /// If <paramref name="idempotencyKey"/> matches a prior reservation, that reservation's id
+        /// is returned instead of creating a duplicate.
+        /// </summary>
+        Task<int> CreateAsync(CreateReservationDto dto, Guid? idempotencyKey, CancellationToken ct = default);
     }
 }

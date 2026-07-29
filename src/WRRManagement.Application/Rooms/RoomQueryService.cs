@@ -1,4 +1,5 @@
 using Microsoft.Extensions.Logging;
+using WRRManagement.Application.Pricing;
 using WRRManagement.Application.Rooms.Dtos;
 using WRRManagement.Core.Entities;
 using WRRManagement.Core.Enums;
@@ -181,62 +182,17 @@ namespace WRRManagement.Application.Rooms
 
                 if (!ratesAvailable) continue;
 
-                // Weekend fee
-                decimal weekendFee = 0;
-                if (system.WeekendFee > 0)
-                {
-                    foreach (var d in rateDates)
-                    {
-                        if (d.DayOfWeek == DayOfWeek.Friday || d.DayOfWeek == DayOfWeek.Saturday)
-                            weekendFee += system.WeekendFee;
-                    }
-                    if (system.AddTaxToWeekendFee)
-                        weekendFee *= 1 + system.TaxRate / 100;
-                }
+                var fees = StayFeeCalculator.Calculate(
+                    system, rateDates, dailyRates, adults, children, adultBase, maxBase,
+                    system.RoomDepositCalAs, system.DepositRoomPercentage);
 
-                // Extra guest fee
-                decimal extraGuestFee = 0;
-                if (maxBase != null)
-                {
-                    int over = totalGuests - maxBase.MaxBaseCount;
-                    if (over > 0) extraGuestFee = over * system.ExtraBaseFee * days;
-                }
-                else if (adultBase != null)
-                {
-                    int adultOver = adults - adultBase.AdultBaseCount;
-                    int childOver = children - adultBase.ChildBaseCount;
-                    if (adultOver > 0) extraGuestFee += adultOver * system.ExtraAdultFee * days;
-                    if (childOver > 0) extraGuestFee += childOver * system.ExtraChildFee * days;
-                }
-                if (system.AddTaxToExtraPerson && extraGuestFee > 0)
-                    extraGuestFee *= 1 + system.TaxRate / 100;
-
-                decimal taxRate = system.TaxRate / 100;
-                decimal tax = subTotal * taxRate;
-
-                // Resort fee
-                decimal resortFee = system.HotelResortFeeCalAs switch
-                {
-                    ResortFeeCalculationMethod.FlatFee => system.ResortFee,
-                    ResortFeeCalculationMethod.FlatFeePerPerson => system.ResortFee * totalGuests,
-                    _ => system.ResortFee * days // FlatFeePerDay (default)
-                };
-                if (system.AddTaxToResortFee)
-                    resortFee *= 1 + taxRate;
-
-                decimal allExtraFees = resortFee + extraGuestFee + weekendFee;
-                decimal total = subTotal + tax + allExtraFees;
-
-                // Deposit
-                decimal deposit = system.RoomDepositCalAs switch
-                {
-                    DepositCalculationMethod.FirstTwoNightsRoomStay =>
-                        (dailyRates.Count >= 2 ? dailyRates[0] + dailyRates[1] : dailyRates[0])
-                        * (system.AddTaxToDeposit ? 1 + taxRate : 1),
-                    DepositCalculationMethod.PercentageOfTotal => system.DepositRoomPercentage ?? 0,
-                    DepositCalculationMethod.TotalReservation => total,
-                    _ => dailyRates[0] * (system.AddTaxToDeposit ? 1 + taxRate : 1) // FirstNightRoomStay
-                };
+                decimal weekendFee = fees.WeekendFee;
+                decimal extraGuestFee = fees.ExtraGuestFee;
+                decimal tax = fees.Tax;
+                decimal resortFee = fees.ResortFee;
+                decimal allExtraFees = fees.AllExtraFees;
+                decimal total = fees.Total;
+                decimal deposit = fees.Deposit;
 
                 // Low allocation warning
                 int lowAllocation = await _roomAllocationRepo.LowestAllocationAsync(room.RoomTypeID, checkIn, checkOut);
