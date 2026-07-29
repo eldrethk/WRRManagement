@@ -32,6 +32,7 @@ Sections:
   7. Reservation + Reservation Amenity procs (insert/select, idempotency,
      allocation locking hint)
   8. Package Rate procs (new - needed by the PricePoint quote path, didn't exist)
+  9. MinStay procs (found while testing Stay Restrictions - same ID-only bug)
 ================================================================================
 */
 
@@ -300,7 +301,7 @@ BEGIN
            Package.ValidFrom, Package.ValidTo, Package.EndDisplayDate, Package.Visible,
            Package.PricingType, Package.NumberOfNights, Package.PercentageOff, Package.Deposit,
            Package.ExtraPersonFee, Package.PackageAllocation, Package.DeletedPackage,
-           Package.SmImage, Package.[Order], Package.SpecialPage
+           Package.SmImage, Package.SortOrder AS [Order], Package.SpecialPage
     FROM dbo.Package
     LEFT JOIN dbo.PackageAmenity ON Package.PackageID = PackageAmenity.PackageID
     WHERE PackageAmenity.ExtraAmenityID = @ExtraAmenityID AND Package.Visible = 1 AND PackageAmenity.Mandatory = 1;
@@ -343,7 +344,7 @@ BEGIN
         (Name, Description, ShortDescription, HotelID, Amenities, ArrMon, ArrTues, ArrWed, ArrThur,
          ArrFri, ArrSat, ArrSun, MinDays, MaxDays, WeekendSurcharge, ResortFees, ValidFrom, ValidTo,
          EndDisplayDate, Visible, PricingType, NumberOfNights, PercentageOff, Deposit,
-         ExtraPersonFee, PackageAllocation, DeletedPackage, SmImage, [Order], SpecialPage)
+         ExtraPersonFee, PackageAllocation, DeletedPackage, SmImage, SortOrder, SpecialPage)
     VALUES
         (@Name, @Description, @ShortDesc, @HotelID, @Amenity, @ArrMon, @ArrTues, @ArrWed, @ArrThurs,
          @ArrFri, @ArrSat, @ArrSun, @MinDays, @MaxDays, @WeekendSurcharge, @ResortFees, @ValidFrom, @ValidTo,
@@ -404,7 +405,7 @@ BEGIN
         ExtraPersonFee = @ExtraPersonFee,
         PackageAllocation = @PackageAllocation,
         DeletedPackage = @DeletedPackage,
-        [Order] = @Order,
+        SortOrder = @Order,
         SpecialPage = @SpecialPage
     WHERE PackageID = @PackageID;
 END
@@ -645,5 +646,36 @@ BEGIN
     FROM dbo.PackageRate
     WHERE RoomTypeID = @RoomTypeID AND PackageID = @PackageID
       AND @Date BETWEEN StartDate AND EndDate AND Visible = 1;
+END
+GO
+
+----------------------------------------------------------------------------
+-- 9. MinStay procs
+----------------------------------------------------------------------------
+-- Found while testing Stay Restrictions: both only ever SELECTed [MinStayID].
+-- genInsMinStay/genUpdMinStay already write the real quantity correctly - the
+-- data was never lost, the grid just never displayed it back correctly.
+CREATE OR ALTER PROCEDURE dbo.genSelMinStayByRoomID
+    @RoomID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT MinStayID, RoomTypeID, StayDate, MinNightStay AS Quantity
+    FROM dbo.MinStay
+    WHERE RoomTypeID = @RoomID AND StayDate >= CONVERT(char(8), GETDATE(), 112)
+    ORDER BY StayDate;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genSelMinStayByID
+    @MinStayID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT MinStayID, RoomTypeID, StayDate, MinNightStay AS Quantity
+    FROM dbo.MinStay
+    WHERE MinStayID = @MinStayID;
 END
 GO
