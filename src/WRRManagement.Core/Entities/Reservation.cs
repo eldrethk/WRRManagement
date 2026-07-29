@@ -5,6 +5,7 @@ namespace WRRManagement.Core.Entities
         public int ReservationID { get; set; }
         public int HotelID { get; set; }
         public int RoomTypeID { get; set; }
+        public int? PackageID { get; set; }
         public int PaymentTypeID { get; set; }
         public DateTime ArrivalDate { get; set; }
         public DateTime DepartureDate { get; set; }
@@ -43,5 +44,6 @@ namespace WRRManagement.Core.Entities
         public DateTime ReservationCreated { get; set; }
         public string? SessionID { get; set; }
         public int CustomerId { get; set; }
+        public Guid? IdempotencyKey { get; set; }
     }
 }

@@ -28,6 +28,7 @@ namespace WRRManagement.Infrastructure.Repositories
                 {
                     reservation.HotelID,
                     reservation.RoomTypeID,
+                    reservation.PackageID,
                     reservation.PaymentTypeID,
                     reservation.ArrivalDate,
                     reservation.DepartureDate,
@@ -65,7 +66,8 @@ namespace WRRManagement.Infrastructure.Repositories
                     reservation.UserInitials,
                     reservation.ReservationCreated,
                     reservation.SessionID,
-                    reservation.CustomerId
+                    reservation.CustomerId,
+                    reservation.IdempotencyKey
                 };
 
                 return await connection.ExecuteScalarAsync<int>("dbo.genInsReservation",
@@ -82,6 +84,12 @@ namespace WRRManagement.Infrastructure.Repositories
                 var parameters = new { ReservationID = reservationId, Date = date, Rate = rate };
                 await ExecuteAsync("dbo.genInsDailyRate", parameters);
             }
+        }
+
+        public async Task<int?> GetIdByIdempotencyKeyAsync(Guid idempotencyKey)
+        {
+            var parameters = new { IdempotencyKey = idempotencyKey };
+            return await QueryFirstOrDefaultAsync<int?>("dbo.genSelReservationByIdempotencyKey", parameters);
         }
     }
 }

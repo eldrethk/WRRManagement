@@ -25,7 +25,7 @@ namespace WRRManagement.Infrastructure.Repositories
                 reservationAmenity.Mandatory,
                 reservationAmenity.TaxRate,
                 reservationAmenity.NumPeople,
-                reservationAmenity.NumDate,
+                NumNights = reservationAmenity.NumNights,
                 reservationAmenity.TotalCharge
             };
             return await ExecuteScalarIntAsync("dbo.genInsReservationAmenity", parameters);

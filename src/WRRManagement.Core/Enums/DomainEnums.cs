@@ -87,4 +87,25 @@ namespace WRRManagement.Core.Enums
         FlatFeePerPerson = 3
     }
 
+    /// How an ExtraAmenity's charge is calculated. Replaces the legacy
+    /// PerDayPerPerson/PerDay/PerNightStay/OneTimeFee/OneTimeFeePerson/Discount bit columns.
+    public enum AmenityPricingType
+    {
+        PerDayPerPerson = 1,
+        PerDay = 2,
+        PerNightStay = 3,
+        OneTimeFee = 4,
+        OneTimeFeePerson = 5,
+        Discount = 6
+    }
+
+    /// How a Package's discount is applied on top of the underlying room rate.
+    /// Replaces the legacy NightsFree/PercentOff/PricePoint bit columns.
+    public enum PackagePricingType
+    {
+        NightsFree = 1,
+        PercentOff = 2,
+        PricePoint = 3
+    }
+
 }

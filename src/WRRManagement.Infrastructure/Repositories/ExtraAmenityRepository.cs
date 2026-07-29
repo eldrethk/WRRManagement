@@ -42,19 +42,14 @@ namespace WRRManagement.Infrastructure.Repositories
                 amenity.Description,
                 amenity.AmenityRate,
                 amenity.Tax,
+                PricingType = (byte)amenity.PricingType,
                 amenity.ViewRate,
                 amenity.Mandatory,
+                amenity.MandatoryQty,
                 amenity.Visible,
-                amenity.PerDayPerPerson,
-                amenity.PerDay,
-                amenity.PerNightStay,
-                amenity.OneTimeFee,
-                amenity.OneTimeFeePerson,
-                amenity.Discount,
                 amenity.DiscountRegularRate,
                 amenity.PictureUrl,
                 amenity.ViewOnRackRate,
-                amenity.MandatoryQty,
                 amenity.AdditionalPurchases
             };
             return await ExecuteScalarIntAsync("dbo.genInsExtraAmenity", parameters);
@@ -70,19 +65,13 @@ namespace WRRManagement.Infrastructure.Repositories
                 amenity.Description,
                 amenity.AmenityRate,
                 amenity.Tax,
+                PricingType = (byte)amenity.PricingType,
                 amenity.ViewRate,
                 amenity.Mandatory,
-                amenity.Visible,
-                amenity.PerDayPerPerson,
-                amenity.PerDay,
-                amenity.PerNightStay,
-                amenity.OneTimeFee,
-                amenity.OneTimeFeePerson,
-                amenity.Discount,
+                amenity.MandatoryQty,
                 amenity.DiscountRegularRate,
                 amenity.PictureUrl,
                 amenity.ViewOnRackRate,
-                amenity.MandatoryQty,
                 amenity.AdditionalPurchases
             };
             await ExecuteAsync("dbo.genUpdExtraAmenity", parameters);
@@ -91,7 +80,7 @@ namespace WRRManagement.Infrastructure.Repositories
         public async Task RemoveAsync(int amenityId)
         {
             var parameters = new { AmenityID = amenityId };
-            await ExecuteAsync("dbo.genInvisbleExtraAmenity", parameters);
+            await ExecuteAsync("dbo.genInvisibleExtraAmenity", parameters);
         }
     }
 }

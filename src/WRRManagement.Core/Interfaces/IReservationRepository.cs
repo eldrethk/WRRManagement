@@ -6,5 +6,6 @@ namespace WRRManagement.Core.Interfaces
     {
         Task<int> CreateAsync(Reservation reservation);
         Task AddDailyRatesAsync(int reservationId, IEnumerable<(DateTime date, decimal rate)> dailyRates);
+        Task<int?> GetIdByIdempotencyKeyAsync(Guid idempotencyKey);
     }
 }

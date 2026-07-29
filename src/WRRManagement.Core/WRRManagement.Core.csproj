@@ -9,6 +9,8 @@
   <ItemGroup>
     <!-- Allow the back-office admin app to access internal setters on entities -->
     <InternalsVisibleTo Include="WRR.Admin" />
+    <!-- Allow unit tests to construct entity fixtures directly -->
+    <InternalsVisibleTo Include="WRRManagement.Application.Tests" />
   </ItemGroup>
 
 </Project>
