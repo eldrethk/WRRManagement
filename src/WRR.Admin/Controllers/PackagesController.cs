@@ -4,6 +4,7 @@ using System.Web;
 using WRR.Admin.Extension;
 using WRR.Admin.Models;
 using WRRManagement.Core.Entities;
+using WRRManagement.Core.Enums;
 using WRRManagement.Core.Interfaces;
 
 namespace WRR.Admin.Controllers
@@ -22,6 +23,23 @@ namespace WRR.Admin.Controllers
             _hostingEnvironment = hostingEnvironment;
             this.amenityRep = amenityRep;
         }
+
+        private static PackagePricingType ParsePricingType(string packageType) => packageType switch
+        {
+            "Nights" => PackagePricingType.NightsFree,
+            "Percentage" => PackagePricingType.PercentOff,
+            "Rate" => PackagePricingType.PricePoint,
+            _ => throw new ArgumentException("Unknown package type", nameof(packageType))
+        };
+
+        private static string PricingTypeToPackageType(PackagePricingType pricingType) => pricingType switch
+        {
+            PackagePricingType.NightsFree => "Nights",
+            PackagePricingType.PercentOff => "Percentage",
+            PackagePricingType.PricePoint => "Rate",
+            _ => string.Empty
+        };
+
         public async Task<IActionResult> Index()
         {
             int hotelid = HttpContext.Session.GetInt("HotelID");
@@ -42,38 +60,39 @@ namespace WRR.Admin.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(PackageViewModel model)
         {
-
             try
             {
                 int hotelid = HttpContext.Session.GetInt("HotelID");
                 var rooms = await roomRep.GetAllForHotelAsync(hotelid);
-                model.RoomTypes =rooms.ToList();
+                model.RoomTypes = rooms.ToList();
                 if (ModelState.IsValid && hotelid > 0)
                 {
+                    var pricingType = ParsePricingType(model.PackageType);
 
-                    model.Package.HotelID = hotelid;
-                    model.Package.Description = HttpUtility.HtmlDecode(model.Package.Description);
-                    model.Package.SmImage = string.Empty;
-                    model.Package.Deposit = 0;
+                    var package = Package.Create(
+                        hotelid,
+                        model.Package.Name,
+                        HttpUtility.HtmlDecode(model.Package.Description),
+                        model.Package.ShortDescription,
+                        model.Package.ArrMon, model.Package.ArrTues, model.Package.ArrWed, model.Package.ArrThurs,
+                        model.Package.ArrFri, model.Package.ArrSat, model.Package.ArrSun,
+                        model.Package.MinDays,
+                        model.Package.MaxDays,
+                        model.Package.WeekendSurcharge,
+                        model.Package.ResortFees,
+                        model.Package.ValidFrom,
+                        model.Package.ValidTo,
+                        model.Package.EndDisplayDate,
+                        pricingType,
+                        pricingType == PackagePricingType.NightsFree ? model.Package.NumberOfNights : null,
+                        pricingType == PackagePricingType.PercentOff ? model.Package.PercentageOff : null,
+                        model.Package.ExtraPersonFee,
+                        model.Package.PackageAllocation,
+                        model.Package.Order,
+                        model.Package.SpecialPage,
+                        model.Package.Visible);
 
-                    if (model.PackageType == "Nights")
-                    {
-                        model.Package.NightsFree = true;
-                        model.Package.PercentageOff = 0;
-                    }
-                    else if (model.PackageType == "Percentage")
-                    {
-                        model.Package.PercentOff = true;
-                        model.Package.NumberOfNights = 0;
-                    }
-                    else if (model.PackageType == "Rate")
-                    {
-                        model.Package.PricePoint = true;
-                        model.Package.NumberOfNights = 0;
-                        model.Package.PercentageOff = 0;
-                    }
-
-                    var id = await packageRep.AddAsync(model.Package);
+                    var id = await packageRep.AddAsync(package);
 
                     if (model.UploadImage != null)
                     {
@@ -91,7 +110,6 @@ namespace WRR.Admin.Controllers
                         {
                             await model.UploadImage.Image.CopyToAsync(fileStream);
                         }
-                        model.Package.SmImage = fileName;
                         await packageRep.UpdateImageAsync(id, fileName);
                     }
                     if (id > 0 && model.SelectedRoomTypeIds != null)
@@ -117,21 +135,13 @@ namespace WRR.Admin.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var package = await packageRep.GetByIdAsync(id);
-            string packageType = string.Empty;
-            if (package.NightsFree == true)
-                packageType = "Nights";
-            else if (package.PercentOff == true)
-                packageType = "Percentage";
-            else if (package.PricePoint == true)
-                packageType = "Rate";
-
             var roomTypes = await roomRep.GetAllForHotelAsync(package.HotelID);
             var packageRoomTypes = await packageRep.GetRoomTypesAsync(id);
 
             PackageViewModel model = new PackageViewModel
             {
                 Package = package,
-                PackageType = packageType,
+                PackageType = PricingTypeToPackageType(package.PricingType),
                 RoomTypes = roomTypes.ToList(),
                 SelectedRoomTypeIds = packageRoomTypes.Select(x => x.RoomTypeID).ToArray()
             };
@@ -145,24 +155,30 @@ namespace WRR.Admin.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    model.Package.Description = HttpUtility.HtmlDecode(model.Package.Description);
-                    if (model.PackageType == "Nights")
-                    {
-                        model.Package.NightsFree = true;
-                        model.Package.PercentageOff = 0;
-                    }
-                    else if (model.PackageType == "Percentage")
-                    {
-                        model.Package.PercentOff = true;
-                        model.Package.NumberOfNights = 0;
-                    }
-                    else if (model.PackageType == "Rate")
-                    {
-                        model.Package.PricePoint = true;
-                        model.Package.NumberOfNights = 0;
-                        model.Package.PercentageOff = 0;
-                    }
+                    var existing = await packageRep.GetByIdAsync(model.Package.PackageID);
+                    var pricingType = ParsePricingType(model.PackageType);
 
+                    existing.Update(
+                        model.Package.Name,
+                        HttpUtility.HtmlDecode(model.Package.Description),
+                        model.Package.ShortDescription,
+                        model.Package.ArrMon, model.Package.ArrTues, model.Package.ArrWed, model.Package.ArrThurs,
+                        model.Package.ArrFri, model.Package.ArrSat, model.Package.ArrSun,
+                        model.Package.MinDays,
+                        model.Package.MaxDays,
+                        model.Package.WeekendSurcharge,
+                        model.Package.ResortFees,
+                        model.Package.ValidFrom,
+                        model.Package.ValidTo,
+                        model.Package.EndDisplayDate,
+                        pricingType,
+                        pricingType == PackagePricingType.NightsFree ? model.Package.NumberOfNights : null,
+                        pricingType == PackagePricingType.PercentOff ? model.Package.PercentageOff : null,
+                        model.Package.ExtraPersonFee,
+                        model.Package.PackageAllocation,
+                        model.Package.Order,
+                        model.Package.SpecialPage,
+                        model.Package.Visible);
 
                     if (model.UploadImage != null)
                     {
@@ -173,27 +189,20 @@ namespace WRR.Admin.Controllers
                             return View(model);
                         }
                         var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, "img/package-images");
-                        var fileName = Guid.NewGuid().ToString() + "_" + model.Package.HotelID.ToString() + "_" + model.UploadImage.Image.FileName;
+                        var fileName = Guid.NewGuid().ToString() + "_" + existing.HotelID.ToString() + "_" + model.UploadImage.Image.FileName;
                         var path = Path.Combine(uploadFolder, fileName);
 
                         using (var fileStream = new FileStream(path, FileMode.Create))
                         {
                             await model.UploadImage.Image.CopyToAsync(fileStream);
                         }
-                        model.Package.SmImage = fileName;
+                        existing.SetImage(fileName);
                     }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(model.Package.SmImage))
-                        {
-                            model.Package.SmImage = string.Empty;
-                        }
 
-                    }
-                    await packageRep.UpdateAsync(model.Package);
+                    await packageRep.UpdateAsync(existing);
 
                     if (model.SelectedRoomTypeIds != null)
-                        await packageRep.SetRoomAssociationsAsync(model.Package.PackageID, model.SelectedRoomTypeIds.ToList());
+                        await packageRep.SetRoomAssociationsAsync(existing.PackageID, model.SelectedRoomTypeIds.ToList());
                     else
                     {
                         ModelState.AddModelError("", "There was an error saving your package and selected room with the system");

@@ -119,12 +119,12 @@
                 <label class="custom-control-label" asp-for="Package.ArrSun"></label>
             </div>
         </dd>
-            @if(Model.Package.NightsFree == true)
+            @if(Model.Package.PricingType == WRRManagement.Core.Enums.PackagePricingType.NightsFree)
             {
                 <dt><label asp-for="Package.NumberOfNights"></label></dt>
                 <dd>@Model.Package.NumberOfNights</dd>
             }
-            else if(Model.Package.PercentOff == true)
+            else if(Model.Package.PricingType == WRRManagement.Core.Enums.PackagePricingType.PercentOff)
             {
                 <dt><label asp-for="Package.PercentageOff"></label></dt>
                 <dd>@Model.Package.PercentageOff</dd>

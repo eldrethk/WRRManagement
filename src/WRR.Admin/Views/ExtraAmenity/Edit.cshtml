@@ -94,33 +94,33 @@
                 <div class="form-group form-padding-left">
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="PerDayPerPerson" id="perdayperperson" onclick="showDiscountType(this)" checked="checked" />
-                        <label class="custom-control-label" for="perdayperperson" asp-for="Amenity.PerDayPerPerson"></label>
+                        <label class="custom-control-label" for="perdayperperson">Per Day Per Person</label>
                     </div>
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="PerDay" id="perday" onclick="showDiscountType(this)" />
-                        <label class="custom-control-label" for="perday" asp-for="Amenity.PerDay"></label>
+                        <label class="custom-control-label" for="perday">Per Day</label>
                     </div>
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="PerNightStay" id="pernightstay" onclick="showDiscountType(this)" />
-                        <label class="custom-control-label" for="pernightstay" asp-for="Amenity.PerNightStay"></label>
+                        <label class="custom-control-label" for="pernightstay">Per Night Stay</label>
                     </div>
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="OneTimeFeePerson" id="onetimefeeperson" onclick="showDiscountType(this)" />
-                        <label class="custom-control-label" for="onetimefeeperson" asp-for="Amenity.OneTimeFeePerson"></label>
+                        <label class="custom-control-label" for="onetimefeeperson">One Time Fee Person</label>
                     </div>
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="OneTimeFee" id="onetime" onclick="showDiscountType(this)" />
-                        <label class="custom-control-label" for="onetime" asp-for="Amenity.OneTimeFee"></label>
+                        <label class="custom-control-label" for="onetime">One Time Fee</label>
                     </div>
                     <div class="custom-control custom-switch">
                         <input type="radio" class="custom-control-input" asp-for="AmenityType" value="Discount" id="discount" onclick="showDiscountType(this)" />
-                        <label class="custom-control-label" for="discount" asp-for="Amenity.Discount"></label>
+                        <label class="custom-control-label" for="discount">Discount</label>
                     </div>
                     <span asp-validation-for="AmenityType" class="text-danger"></span>
                 </div>
             </div>
             <div class="col-md-6">
-                <div id="discountcontainer" class='form-group @(Model.Amenity.Discount == true ? "show-display" : "no-display")'>
+                <div id="discountcontainer" class='form-group @(Model.Amenity.PricingType == WRRManagement.Core.Enums.AmenityPricingType.Discount ? "show-display" : "no-display")'>
                     <label asp-for="Amenity.DiscountRegularRate" class="control-label"></label>
                     <div class="col-md-10">
                         <input asp-for="Amenity.DiscountRegularRate" class="form-control" />

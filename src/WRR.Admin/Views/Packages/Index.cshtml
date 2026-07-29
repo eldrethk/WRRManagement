@@ -31,7 +31,7 @@
                 @Html.DisplayNameFor(model => model.Amenity)
             </th>
             <th class="text-center">
-                @Html.DisplayNameFor(model => model.PricePoint)
+                Price Point
             </th>
             <th></th>
         </tr>
@@ -76,7 +76,7 @@
                    <a asp-action="Index" asp-controller="PackageAmenity" asp-route-id="@item.PackageID" class="fas fa-spa fa-2x text-info"></a>
                 </td>
                 <td class="text-center">
-                    @if (item.PricePoint)
+                    @if (item.PricingType == WRRManagement.Core.Enums.PackagePricingType.PricePoint)
                     {
                         <a asp-action="Details" asp-controller="PackageRackRate" asp-route-id="@item.PackageID" class="btn btn-outline-success">Add Rates</a>
                     }

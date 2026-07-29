@@ -38,10 +38,10 @@
         </dd>
         <dt>Amenity Type</dt>
         <dd>@Model.AmenityType</dd>
-        @if(Model.Amenity.Discount)
+        @if(Model.Amenity.PricingType == WRRManagement.Core.Enums.AmenityPricingType.Discount)
         {
-            <dt>Discount</dt>
-            <dd>@Model.Amenity.Discount</dd>
+            <dt>Discount Off Regular Rate</dt>
+            <dd>@Model.Amenity.DiscountRegularRate</dd>
         }
         <div class="w-50 mb-5">
             <ul class="list-group">

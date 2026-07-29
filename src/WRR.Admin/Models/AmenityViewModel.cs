@@ -1,6 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations;
 using WRRManagement.Core.Interfaces;
 using WRRManagement.Core.Entities;
+using WRRManagement.Core.Enums;
 
 namespace WRR.Admin.Models
 {
@@ -8,8 +9,7 @@ namespace WRR.Admin.Models
     {
 
         public ExtraAmenity Amenity { get; set; }
-        
-        //public string Description { get; set; }
+
         public string AmenityType { get; set; }
         public bool ViewRate { get; set; }
         public bool ViewOnRackRate { get; set; }
@@ -19,12 +19,8 @@ namespace WRR.Admin.Models
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
-            if (AmenityType == "Discount")
-            {
-                Amenity.Discount = true;
-                if (Amenity.DiscountRegularRate == null)
-                    yield return new ValidationResult("Original Rate is required for discount");
-            }
+            if (AmenityType == nameof(AmenityPricingType.Discount) && Amenity?.DiscountRegularRate == null)
+                yield return new ValidationResult("Original Rate is required for discount");
         }
 
     }

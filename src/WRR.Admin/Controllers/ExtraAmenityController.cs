@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Web;
 using WRRManagement.Core.Entities;
+using WRRManagement.Core.Enums;
 using WRRManagement.Core.Interfaces;
 using WRR.Admin.Extension;
 using WRR.Admin.Models;
@@ -32,30 +33,14 @@ namespace WRR.Admin.Controllers
         // GET: ExtraAmenityController/Details/5
         public async Task<IActionResult> Details(int id)
         {
-            string type = string.Empty;
-
             var amenity = await extraAmenityRepository.GetByIdAsync(id);
             var packages = await packageAmenityRepository.GetPackagesForAmenityAsync(id);
             AmenityViewModel model = new AmenityViewModel
             {
                 Amenity = amenity,
                 Packages = packages.ToList(),
-
+                AmenityType = amenity.PricingType.ToString()
             };
-            if (model.Amenity.PerDayPerPerson)
-                type = "Per Day Per Person";
-            else if (model.Amenity.PerDay)
-                type = "Per Day";
-            else if (model.Amenity.PerNightStay)
-                type = "Per Night Stay";
-            else if (model.Amenity.OneTimeFee)
-                type = "One Time Fee";
-            else if (model.Amenity.OneTimeFeePerson)
-                type = "One Time Fee Person";
-            else if (model.Amenity.Discount)
-                type = "Discount";
-
-            model.AmenityType = type;
             return View(model);
         }
 
@@ -72,36 +57,13 @@ namespace WRR.Admin.Controllers
         {
             try
             {
-
-
                 if (ModelState.IsValid)
                 {
-                    int HotelId = HttpContext.Session.GetInt("HotelID");
+                    int hotelId = HttpContext.Session.GetInt("HotelID");
+                    var pricingType = Enum.Parse<AmenityPricingType>(model.AmenityType);
+                    var description = HttpUtility.HtmlDecode(model.Amenity.Description);
 
-                    model.Amenity.HotelID = HotelId;
-                    model.Amenity.Description = HttpUtility.HtmlDecode(model.Amenity.Description);
-                    model.Amenity.Mandatory = false;
-                    model.Amenity.ViewOnRackRate = model.ViewOnRackRate;
-                    model.Amenity.ViewRate = false;
-
-                    if (model.AmenityType == "PerDayPerPerson")
-                        model.Amenity.PerDayPerPerson = true;
-                    else if (model.AmenityType == "PerDay")
-                        model.Amenity.PerDay = true;
-                    else if (model.AmenityType == "PerNightStay")
-                        model.Amenity.PerNightStay = true;
-                    else if (model.AmenityType == "OneTimeFee")
-                        model.Amenity.OneTimeFee = true;
-                    else if (model.AmenityType == "OneTimeFeePerson")
-                        model.Amenity.OneTimeFeePerson = true;
-                    else if (model.AmenityType == "Discount")
-                        model.Amenity.Discount = true;
-
-
-                    if (model.Amenity.Discount == false)
-                        model.Amenity.DiscountRegularRate = 0;
-
-                    //upload image and save to amenity
+                    string pictureUrl = string.Empty;
                     if (model.UploadImage != null)
                     {
                         var supportedTypes = new[] { "image/jpg", "image/jpeg", "image/png" };
@@ -111,21 +73,32 @@ namespace WRR.Admin.Controllers
                             return View(model);
                         }
                         var uploadFolder = Path.Combine(_hostingEnvironment.WebRootPath, "img/amenity-images");
-                        var fileName = Guid.NewGuid().ToString() + "_" + HotelId.ToString() + "_" + model.UploadImage.Image.FileName;
+                        var fileName = Guid.NewGuid().ToString() + "_" + hotelId.ToString() + "_" + model.UploadImage.Image.FileName;
                         var path = Path.Combine(uploadFolder, fileName);
 
                         using (var fileStream = new FileStream(path, FileMode.Create))
                         {
                             await model.UploadImage.Image.CopyToAsync(fileStream);
                         }
-                        model.Amenity.PictureUrl = fileName;
-                    }
-                    else
-                    {
-                        model.Amenity.PictureUrl = string.Empty;
+                        pictureUrl = fileName;
                     }
 
-                    await extraAmenityRepository.AddAsync(model.Amenity);
+                    var amenity = ExtraAmenity.Create(
+                        hotelId,
+                        model.Amenity.Name,
+                        model.Amenity.ShortDescription,
+                        description,
+                        model.Amenity.AmenityRate,
+                        model.Amenity.Tax,
+                        pricingType,
+                        model.ViewOnRackRate,
+                        mandatory: false,
+                        mandatoryQty: null,
+                        discountRegularRate: pricingType == AmenityPricingType.Discount ? model.Amenity.DiscountRegularRate : null,
+                        pictureUrl: pictureUrl,
+                        additionalPurchases: model.Amenity.AdditionalPurchases);
+
+                    await extraAmenityRepository.AddAsync(amenity);
                     return RedirectToAction(nameof(Index));
                 }
 
@@ -141,30 +114,14 @@ namespace WRR.Admin.Controllers
         public async Task<IActionResult> Edit(int id)
         {
             var extraAmenity = await extraAmenityRepository.GetByIdAsync(id);
-
-            string type = string.Empty;
-            if (extraAmenity.PerDayPerPerson)
-                type = "PerDayPerPerson";
-            else if (extraAmenity.PerDay)
-                type = "PerDay";
-            else if (extraAmenity.PerNightStay)
-                type = "PerNightStay";
-            else if (extraAmenity.OneTimeFee)
-                type = "OneTimeFee";
-            else if (extraAmenity.OneTimeFeePerson)
-                type = "OneTimeFeePerson";
-            else if (extraAmenity.Discount)
-                type = "Discount";
-
             var packages = await packageAmenityRepository.GetPackagesForAmenityAsync(id);
 
             AmenityViewModel model = new AmenityViewModel
             {
                 Amenity = extraAmenity,
-                //Description = HttpUtility.HtmlDecode(extraAmenity.Description),
                 ViewRate = false,
                 ViewOnRackRate = extraAmenity.ViewOnRackRate,
-                AmenityType = type,
+                AmenityType = extraAmenity.PricingType.ToString(),
                 Packages = packages.ToList()
             };
             return View(model);
@@ -179,25 +136,11 @@ namespace WRR.Admin.Controllers
             {
                 if (ModelState.IsValid)
                 {
-                    model.Amenity.Description = HttpUtility.HtmlDecode(model.Amenity.Description);
-                    model.Amenity.ViewOnRackRate = model.ViewOnRackRate;
-                    if (model.AmenityType == "PerDayPerPerson")
-                        model.Amenity.PerDayPerPerson = true;
-                    else if (model.AmenityType == "PerDay")
-                        model.Amenity.PerDay = true;
-                    else if (model.AmenityType == "PerNightStay")
-                        model.Amenity.PerNightStay = true;
-                    else if (model.AmenityType == "OneTimeFee")
-                        model.Amenity.OneTimeFee = true;
-                    else if (model.AmenityType == "OneTimeFeePerson")
-                        model.Amenity.OneTimeFeePerson = true;
-                    else if (model.AmenityType == "Discount")
-                        model.Amenity.Discount = true;
+                    var existing = await extraAmenityRepository.GetByIdAsync(model.Amenity.AmenityID);
+                    var pricingType = Enum.Parse<AmenityPricingType>(model.AmenityType);
+                    var description = HttpUtility.HtmlDecode(model.Amenity.Description);
 
-                    if (model.Amenity.Discount == false)
-                        model.Amenity.DiscountRegularRate = 0;
-
-                    //upload image and save to amenity
+                    string? pictureUrl = existing?.PictureUrl ?? string.Empty;
                     if (model.UploadImage != null)
                     {
                         var supportedTypes = new[] { "image/jpg", "image/jpeg", "image/png" };
@@ -214,15 +157,24 @@ namespace WRR.Admin.Controllers
                         {
                             await model.UploadImage.Image.CopyToAsync(fileStream);
                         }
-                        model.Amenity.PictureUrl = fileName;
-                    }
-                    else
-                    {
-                        if (string.IsNullOrEmpty(model.Amenity.PictureUrl))
-                            model.Amenity.PictureUrl = string.Empty;
+                        pictureUrl = fileName;
                     }
 
-                    await extraAmenityRepository.UpdateAsync(model.Amenity);
+                    existing.Update(
+                        model.Amenity.Name,
+                        model.Amenity.ShortDescription,
+                        description,
+                        model.Amenity.AmenityRate,
+                        model.Amenity.Tax,
+                        pricingType,
+                        model.ViewOnRackRate,
+                        existing.Mandatory,
+                        existing.MandatoryQty,
+                        pricingType == AmenityPricingType.Discount ? model.Amenity.DiscountRegularRate : null,
+                        pictureUrl,
+                        model.Amenity.AdditionalPurchases);
+
+                    await extraAmenityRepository.UpdateAsync(existing);
                     return RedirectToAction(nameof(Index));
                 }
                 return View(model);

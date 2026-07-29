@@ -35,31 +35,19 @@
                     @item.Name
                 </td>
                 <td>
-                    @if (item.Discount == true)
-                    {
-                        <span class="text-secondary font-weight-bold">@Html.DisplayNameFor(model => model.Discount)</span>
+                    @{
+                        var badgeClass = item.PricingType switch
+                        {
+                            WRRManagement.Core.Enums.AmenityPricingType.Discount => "text-secondary",
+                            WRRManagement.Core.Enums.AmenityPricingType.OneTimeFee => "text-danger",
+                            WRRManagement.Core.Enums.AmenityPricingType.OneTimeFeePerson => "text-warning",
+                            WRRManagement.Core.Enums.AmenityPricingType.PerDay => "text-info",
+                            WRRManagement.Core.Enums.AmenityPricingType.PerDayPerPerson => "text-primary",
+                            WRRManagement.Core.Enums.AmenityPricingType.PerNightStay => "text-success",
+                            _ => "text-muted"
+                        };
                     }
-                    else if (item.OneTimeFee == true)
-                    {
-                        <span class="text-danger font-weight-bold">@Html.DisplayNameFor(model => model.OneTimeFee)</span>
-                    }
-                    else if (item.OneTimeFeePerson == true)
-                    {
-                        <span class="text-warning font-weight-bold">@Html.DisplayNameFor(model => model.OneTimeFeePerson)</span>
-                    }
-                    else if (item.PerDay == true)
-                    {
-                        <span class="text-info font-weight-bold">@Html.DisplayNameFor(model => model.PerDay)</span>
-                    }
-                    else if (item.PerDayPerPerson == true)
-                    {
-                        <span class="text-primary font-weight-bold">@Html.DisplayNameFor(model => model.PerDayPerPerson)</span>
-                    }
-                    else if (item.PerNightStay == true)
-                    {
-                        <span class="text-success font-weight-bold">@Html.DisplayNameFor(model => model.PerNightStay)</span>
-                    }
-
+                    <span class="@badgeClass font-weight-bold">@item.PricingType</span>
                 </td>
                 <td style="max-width:250px;">
                     @item.ShortDescription
