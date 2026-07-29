@@ -15,6 +15,7 @@ using WRRManagement.Application.Hotels;
 using WRRManagement.Application.Amenities;
 using WRRManagement.Application.Reservations;
 using WRRManagement.Application.Marketing;
+using WRRManagement.Application.Pricing;
 
 
 //Serilog Logger
@@ -57,6 +58,11 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddScoped<IHotelSystemRepository, HotelSystemRepository>();
     //Amenity query dependencies
     builder.Services.AddScoped<IExtraAmenityRepository, ExtraAmenityRepository>();
+    //Package/quote dependencies
+    builder.Services.AddScoped<IPackageRepository, PackageRepository>();
+    builder.Services.AddScoped<IPackageRateRepository, PackageRateRepository>();
+    builder.Services.AddScoped<IPackageAmenityRepository, PackageAmenityRepository>();
+    builder.Services.AddScoped<IPackageAllocationRepository, PackageAllocationRepository>();
     //Reservation dependencies
     builder.Services.AddScoped<IReservationRepository, ReservationRepository>();
     builder.Services.AddScoped<IReservationAmenityRepository, ReservationAmenityRepository>();
@@ -72,6 +78,7 @@ Log.Logger = new LoggerConfiguration()
     builder.Services.AddScoped<IAmenityQueryService, AmenityQueryService>();
     builder.Services.AddScoped<IReservationService, ReservationService>();
     builder.Services.AddScoped<IMarketingService, MarketingService>();
+    builder.Services.AddScoped<IQuoteService, QuoteService>();
 
     builder.AddDevAuthServices();
     builder.AddAuthorizatonServices();

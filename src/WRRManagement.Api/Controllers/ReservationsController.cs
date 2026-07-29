@@ -11,6 +11,8 @@ namespace WRRManagement.Api.Controllers
     [Route("api/reservations")]
     public class ReservationsController : ControllerBase
     {
+        private const string IdempotencyKeyHeader = "Idempotency-Key";
+
         private readonly IReservationService _reservationService;
         private readonly ILogger<ReservationsController> _logger;
 
@@ -21,21 +23,37 @@ namespace WRRManagement.Api.Controllers
         }
 
         /// <summary>
-        /// Create a new guest reservation. Returns the new reservation ID.
+        /// Create a new guest reservation. Re-validates availability and recomputes pricing
+        /// server-side — never trusts a client-submitted total. Pass a client-generated GUID in the
+        /// Idempotency-Key header to make retries/double-clicks safe: a repeated key returns the
+        /// original reservation instead of creating a duplicate.
         /// </summary>
         [HttpPost("")]
         [ProducesResponseType(typeof(ApiResponse<int>), StatusCodes.Status201Created)]
         [ProducesResponseType(typeof(ApiResponse), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse<int>>> Create([FromBody] CreateReservationDto dto, CancellationToken ct)
         {
-            if (dto.ArrivalDate >= dto.DepartureDate)
-                return BadRequest(ApiResponse.ErrorResponse("Arrival date must be before departure date"));
+            Guid? idempotencyKey = null;
+            if (Request.Headers.TryGetValue(IdempotencyKeyHeader, out var headerValue))
+            {
+                if (!Guid.TryParse(headerValue, out var parsedKey))
+                    return BadRequest(ApiResponse.ErrorResponse($"{IdempotencyKeyHeader} header must be a valid GUID"));
+                idempotencyKey = parsedKey;
+            }
 
             try
             {
-                var reservationId = await _reservationService.CreateAsync(dto, ct);
+                var reservationId = await _reservationService.CreateAsync(dto, idempotencyKey, ct);
                 return CreatedAtAction(nameof(GetById), new { id = reservationId },
                     ApiResponse<int>.SuccessResponse(reservationId));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ApiResponse.ErrorResponse(ex.Message));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(ApiResponse.ErrorResponse(ex.Message));
             }
             catch (Exception ex)
             {
