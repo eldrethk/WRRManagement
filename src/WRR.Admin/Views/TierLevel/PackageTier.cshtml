@@ -28,7 +28,7 @@
     </div>
     <div class="col-md-9">
 
-        <div class='container mt-3 @(Model.SelectedID > 0 ? "no-display" : "show-display")'>
+        <div class='container mt-3 @(Model.SelectedID > 0 ? "show-display" : "no-display")'>
             <component type="typeof(PackageTierLevelComp)" param-PackageID="@Model.SelectedID" render-mode="ServerPrerendered" />
         </div>
 

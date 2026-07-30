@@ -78,9 +78,27 @@ namespace WRR.Admin.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> PackageTier(TierLevelViewModel model)
         {
+            // This form only posts SelectedID - StartDate/EndDate/TierLevel belong to the
+            // separate Add Date Range modal (PackageCreate) and shouldn't block this view.
+            ModelState.Clear();
+
             int hotelID = HttpContext.Session.GetInt("HotelID");
             model.Packages = (await _packageTierLevelRepository.GetPackagesWithTierAsync(hotelID)).ToList();
             return View(model);
+        }
+
+        public async Task<IActionResult> OpenModal(int id)
+        {
+            var packages = await _packageTierLevelRepository.GetPackagesWithTierAsync(HttpContext.Session.GetInt("HotelID"));
+            var name = packages.FirstOrDefault(p => p.PackageID == id)?.Name ?? string.Empty;
+
+            TierLevelViewModel model = new TierLevelViewModel()
+            {
+                SelectedID = id,
+                SelectedName = name,
+                TierLevel = 'A'
+            };
+            return PartialView("_daterange", model);
         }
 
         [HttpPost]
