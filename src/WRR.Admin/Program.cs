@@ -89,8 +89,11 @@ try
     builder.Services.AddScoped<IMarketingService, MarketingService>();
     builder.Services.AddScoped<IQuoteService, QuoteService>();
 
-    // UI frameworks 
-    builder.Services.AddRazorComponents().AddInteractiveServerComponents();
+    // UI frameworks
+    builder.Services.AddRazorComponents().AddInteractiveServerComponents(options =>
+    {
+        options.DetailedErrors = builder.Environment.IsDevelopment();
+    });
     builder.Services.AddControllersWithViews();
     builder.Services.AddSmart();
     builder.Services.AddBlazorBootstrap();
