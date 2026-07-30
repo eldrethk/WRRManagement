@@ -35,6 +35,14 @@ Sections:
   9. MinStay procs (found while testing Stay Restrictions - same ID-only bug)
   10. RackRate: drop TierD/Monthly columns, fix all five RackRate procs
       (three were ID-only stubs - see section header for why this one matters)
+  11. Two Package listing procs that still referenced
+      NightsFree/PercentOff/PricePoint after section 2 dropped those
+      columns (missed these originally). NOTE: sections 4-10's "ID-only
+      stub" fixes were confirmed against actual thrown errors as you hit
+      them; section 11 originally also rewrote several sibling procs based
+      only on the checked-in Stored_Procedures.sql file, which turned out
+      to be a stale export that doesn't match the live database - those
+      unconfirmed rewrites were removed. See section 11's header.
 ================================================================================
 */
 
@@ -778,5 +786,48 @@ BEGIN
     SELECT RackRateID, RoomTypeID, StartDate, EndDate, TierARate, TierBRate, TierCRate, Visible
     FROM dbo.RackRates
     WHERE RoomTypeID = @RoomID AND @Temp BETWEEN StartDate AND EndDate AND Visible = 1;
+END
+GO
+
+----------------------------------------------------------------------------
+-- 11. Package listing procs still referencing dropped pricing-type columns
+----------------------------------------------------------------------------
+-- NOTE: the checked-in Stored_Procedures.sql this whole script was audited
+-- against is a stale April 2025 export - it does NOT reflect what's
+-- actually deployed (confirmed live: these two procs already use SELECT *,
+-- not the ID-only stub the file shows). An earlier draft of this section
+-- rewrote several sibling procs (genSelPackageByID, genSelPackagesByHotelID,
+-- etc.) based on that stale file; those were removed since they were never
+-- confirmed against the live database. Recommend re-exporting a fresh
+-- Stored_Procedures.sql/Tables_Schema.sql from the actual server before
+-- auditing further procs this way.
+--
+-- These two are real, confirmed bugs: section 2 of this script drops
+-- Package.NightsFree/PercentOff/PricePoint in favor of PricingType, but
+-- these procs' WHERE clauses still reference the dropped columns, which
+-- throws "Invalid column name" the moment either runs. Fixed by switching
+-- the WHERE clause to PricingType; SELECT * preserved as-is to match what's
+-- actually live. PricingType: 1=NightsFree 2=PercentOff 3=PricePoint.
+CREATE OR ALTER PROCEDURE dbo.genSelPackagesWithRates
+    @HotelID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM Package
+    WHERE HotelID = @HotelID AND DeletedPackage = 0 AND PricingType = 3
+    ORDER BY ValidFrom DESC;
+END
+GO
+
+CREATE OR ALTER PROCEDURE dbo.genSelPackagesWithTierLevel
+    @HotelID int
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT * FROM Package
+    WHERE HotelID = @HotelID AND DeletedPackage = 0 AND PricingType IN (1, 2)
+    ORDER BY ValidFrom DESC;
 END
 GO
